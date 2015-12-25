@@ -1,6 +1,7 @@
 package sightfinder.model;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -28,6 +29,18 @@ public class Landmark implements Serializable {
     @JoinColumn(name = "landmark_type_id")
     private LandmarkType landMarkType;
 
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude")
+    private Double longitude;
+
+    @Column(name = "description")
+    private String description;
+
+    @Column(name = "ticket_price")
+    private BigDecimal ticketPrice;
+
     public Long getId() {
 	return id;
     }
@@ -50,5 +63,37 @@ public class Landmark implements Serializable {
 
     public void setLandMarkType(LandmarkType landMarkType) {
 	this.landMarkType = landMarkType;
+    }
+
+    public Double getLatitude() {
+	return latitude;
+    }
+
+    public void setLatitude(Double latitude) {
+	this.latitude = latitude;
+    }
+
+    public Double getLongitude() {
+	return longitude;
+    }
+
+    public void setLongitude(Double longitude) {
+	this.longitude = longitude;
+    }
+
+    public String getDescription() {
+	return description;
+    }
+
+    public void setDescription(String description) {
+	this.description = description;
+    }
+
+    public BigDecimal getTicketPrice() {
+	return ticketPrice;
+    }
+
+    public void setTicketPrice(BigDecimal ticketPrice) {
+	this.ticketPrice = ticketPrice;
     }
 }
