@@ -14,6 +14,10 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.hibernate.annotations.Type;
+
+import sightfinder.util.Source;
+
 @Entity
 @Table(name = "landmark")
 public class Landmark implements Serializable {
@@ -30,7 +34,7 @@ public class Landmark implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "landmark_type_id")
-    private LandmarkType landMarkType;
+    private LandmarkType landmarkType;
 
     @Column(name = "latitude")
     private Double latitude;
@@ -39,6 +43,7 @@ public class Landmark implements Serializable {
     private Double longitude;
 
     @Column(name = "description")
+    @Type(type = "text")
     private String description;
 
     @Column(name = "working_time_from")
@@ -51,6 +56,9 @@ public class Landmark implements Serializable {
 
     @Column(name = "ticket_price")
     private BigDecimal ticketPrice;
+
+    @Column(name = "source")
+    private Source source;
 
     public Long getId() {
 	return id;
@@ -68,12 +76,12 @@ public class Landmark implements Serializable {
 	this.name = name;
     }
 
-    public LandmarkType getLandMarkType() {
-	return landMarkType;
+    public LandmarkType getLandmarkType() {
+	return landmarkType;
     }
 
-    public void setLandMarkType(LandmarkType landMarkType) {
-	this.landMarkType = landMarkType;
+    public void setLandmarkType(LandmarkType landmarkType) {
+	this.landmarkType = landmarkType;
     }
 
     public Double getLatitude() {
@@ -122,5 +130,13 @@ public class Landmark implements Serializable {
 
     public void setTicketPrice(BigDecimal ticketPrice) {
 	this.ticketPrice = ticketPrice;
+    }
+
+    public Source getSource() {
+	return source;
+    }
+
+    public void setSource(Source source) {
+	this.source = source;
     }
 }
