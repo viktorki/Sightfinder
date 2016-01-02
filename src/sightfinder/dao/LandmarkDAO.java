@@ -1,4 +1,4 @@
-package sightfinder.service;
+package sightfinder.dao;
 
 import org.springframework.data.repository.CrudRepository;
 

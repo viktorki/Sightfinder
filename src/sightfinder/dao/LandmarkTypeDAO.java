@@ -1,4 +1,4 @@
-package sightfinder.service;
+package sightfinder.dao;
 
 import org.springframework.data.repository.CrudRepository;
 
@@ -6,5 +6,5 @@ import sightfinder.model.LandmarkType;
 
 public interface LandmarkTypeDAO extends CrudRepository<LandmarkType, Long> {
 
-    public LandmarkType findByName(String name);
+    LandmarkType findByName(String name);
 }
