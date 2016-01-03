@@ -14,5 +14,4 @@ public final class LandmarkData {
     public static synchronized void addLandmark(CrawledLandmark landmark) {
         landmarkList.add(landmark);
     }
-
 }

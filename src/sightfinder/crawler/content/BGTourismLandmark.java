@@ -12,6 +12,7 @@ public class BGTourismLandmark extends CrawledLandmark {
 
     private String description;
 
+
     @Override
     public String getCategory() {
         return this.category;

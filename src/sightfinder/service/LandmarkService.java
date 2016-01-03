@@ -14,6 +14,6 @@ public class LandmarkService {
     private LandmarkDAO landmarkDAO;
 
     public Landmark save(Landmark landmark) {
-	return landmarkDAO.save(landmark);
+    	return landmarkDAO.save(landmark);
     }
 }

@@ -3,7 +3,7 @@ package sightfinder.util;
 import java.io.File;
 
 public class Constants {
-
+	
     public static final String CRAWL_STORAGE_FOLDER = System.getProperty("user.home") + File.separator + "crawler";
 
     public static final int NUMBER_OF_CRAWLERS = 1;
@@ -45,4 +45,31 @@ public class Constants {
     public static final String VISIT_BG_OBJECT_LATITUDE_ARRTIBUTE = "data-lat";
 
     public static final String VISIT_BG_OBJECT_LONGITUDE_ARRTIBUTE = "data-lng";
+    
+	public static final String POCHIVKA_BG_URL =  "http://pochivka.bg/";
+	
+	public static final String POCHIVKA_BG_MOBILE_URL =  "http://mob.pochivka.bg";
+	
+	public static final String POCHIVKA_BG_OBJECTS_URL = POCHIVKA_BG_URL + "sights/sights/loadSightByCategory?&destinationId=&page=";
+	
+	public static final int POCHIVKA_BG_OBJECTS_LIST_FIRST_PAGE_INDEX = 1;
+	
+	public static final int POCHIVKA_BG_OBJECT_LIST_PAGES_COUNT = 44;
+	
+	public static final String POCHIVKA_BG_LANDMARK_PATH_SUFFIX = "-z";
+	
+	public static final String POCHIVKA_BG_OBJECT_NAME_ELEMENT_SELECTOR = ".page-title > h2";
+
+	public static final String POCHIVKA_BG_OBJECT_DESCRIPTION_ELEMENT_SELECTOR = ".panel-body";
+	
+	public static final String POCHIVKA_BG_OBJECT_PAGE_SCRIPT_ELEMENT_SELECTOR = "html > body > script";
+	
+	public static final String POCHIVKA_BG_LATITUDE_REGEX = "window\\.lat = (\\d+\\.\\d+)";
+	
+	public static final String POCHIVKA_BG_LONGTITUDE_REGEX = "window\\.lon = (\\d+\\.\\d+)";
+
+	public static final String COOKIE_HEADER = "Cookie";
+
+	public static final String COOKIE_HEADER_VALUE = "isMobile=0; showMobile=0;";
+
 }
