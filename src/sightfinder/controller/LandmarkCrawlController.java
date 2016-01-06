@@ -1,14 +1,11 @@
 package sightfinder.controller;
 
-import edu.uci.ics.crawler4j.crawler.CrawlConfig;
-import edu.uci.ics.crawler4j.crawler.CrawlController;
-import edu.uci.ics.crawler4j.fetcher.PageFetcher;
-import edu.uci.ics.crawler4j.robotstxt.RobotstxtConfig;
-import edu.uci.ics.crawler4j.robotstxt.RobotstxtServer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+
 import sightfinder.crawler.BGTourismCrawler;
+import sightfinder.crawler.PochivkaBGCrawler;
 import sightfinder.crawler.VisitBGCrawler;
 import sightfinder.crawler.content.CrawledLandmark;
 import sightfinder.crawler.content.LandmarkData;
@@ -16,6 +13,11 @@ import sightfinder.model.LandmarkType;
 import sightfinder.service.LandmarkService;
 import sightfinder.service.LandmarkTypeService;
 import sightfinder.util.Constants;
+import edu.uci.ics.crawler4j.crawler.CrawlConfig;
+import edu.uci.ics.crawler4j.crawler.CrawlController;
+import edu.uci.ics.crawler4j.fetcher.PageFetcher;
+import edu.uci.ics.crawler4j.robotstxt.RobotstxtConfig;
+import edu.uci.ics.crawler4j.robotstxt.RobotstxtServer;
 
 @Controller
 @RequestMapping("/crawl")
@@ -30,6 +32,7 @@ public class LandmarkCrawlController {
 	@Autowired
 	private CrawlConfig config;
 
+	
 	@RequestMapping("/bg-tourism")
 	public void crawlBGTourism() {
 		CrawlController controller = newCrawlControllerInstance();
@@ -47,12 +50,23 @@ public class LandmarkCrawlController {
 
 		processCollectedData();
 	}
+	
+	@RequestMapping("/pochivka-bg")
+	public void crawlPochivkaBG() {
+		CrawlController controller = newCrawlControllerInstance();
+		for (int i = Constants.POCHIVKA_BG_OBJECTS_LIST_FIRST_PAG_INDEX; i <= Constants.POCHIVKA_BG_OBJECT_LIST_PAGES_COUNT; ++i) {
+			controller.addSeed(Constants.POCHIVKA_BG_OBJECTS_URL + i);
+		}
+		controller.start(PochivkaBGCrawler.class, Constants.NUMBER_OF_CRAWLERS);
+
+		processCollectedData();
+	}
 
 	private void processCollectedData() {
 		for (CrawledLandmark landmark : LandmarkData.getAndClearCollectedLandmarks()) {
 			String category = landmark.getCategory();
 
-			LandmarkType landmarkType = landmarkTypeService.getOrCreate(category);
+			LandmarkType landmarkType = category != null ? landmarkTypeService.getOrCreate(category) : null;
 			landmarkService.save(landmark.toLandmark(landmarkType));
 		}
 	}

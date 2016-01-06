@@ -27,10 +27,10 @@ public class LandmarkTypeService {
     }
 
     private LandmarkType save(LandmarkType landmarkType) {
-	return landmarkTypeDAO.save(landmarkType);
+    	return landmarkTypeDAO.save(landmarkType);
     }
 
     private LandmarkType findByName(String name) {
-	return landmarkTypeDAO.findByName(name);
+    	return landmarkTypeDAO.findByName(name);
     }
 }

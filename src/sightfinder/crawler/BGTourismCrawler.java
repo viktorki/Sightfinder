@@ -58,7 +58,5 @@ public class BGTourismCrawler extends WebCrawler {
             LandmarkData.addLandmark(bgTourismLandmark);
         }
     }
-
-
 }
 

@@ -61,67 +61,67 @@ public class Landmark implements Serializable {
     private Source source;
 
     public Long getId() {
-	return id;
+    	return id;
     }
 
     public void setId(Long id) {
-	this.id = id;
+    	this.id = id;
     }
 
     public String getName() {
-	return name;
+    	return name;
     }
 
     public void setName(String name) {
-	this.name = name;
+    	this.name = name;
     }
 
     public LandmarkType getLandmarkType() {
-	return landmarkType;
+    	return landmarkType;
     }
 
     public void setLandmarkType(LandmarkType landmarkType) {
-	this.landmarkType = landmarkType;
+    	this.landmarkType = landmarkType;
     }
 
     public Double getLatitude() {
-	return latitude;
+    	return latitude;
     }
 
     public void setLatitude(Double latitude) {
-	this.latitude = latitude;
+    	this.latitude = latitude;
     }
 
     public Double getLongitude() {
-	return longitude;
+    	return longitude;
     }
 
     public void setLongitude(Double longitude) {
-	this.longitude = longitude;
+    	this.longitude = longitude;
     }
 
     public String getDescription() {
-	return description;
+    	return description;
     }
 
     public void setDescription(String description) {
-	this.description = description;
+    	this.description = description;
     }
 
     public Date getWorkingTimeFrom() {
-	return workingTimeFrom;
+    	return workingTimeFrom;
     }
 
     public void setWorkingTimeFrom(Date workingTimeFrom) {
-	this.workingTimeFrom = workingTimeFrom;
+    	this.workingTimeFrom = workingTimeFrom;
     }
 
     public Date getWorkingTimeTo() {
-	return workingTimeTo;
+    	return workingTimeTo;
     }
 
     public void setWorkingTimeTo(Date workingTimeTo) {
-	this.workingTimeTo = workingTimeTo;
+    	this.workingTimeTo = workingTimeTo;
     }
 
     public BigDecimal getTicketPrice() {
@@ -129,14 +129,14 @@ public class Landmark implements Serializable {
     }
 
     public void setTicketPrice(BigDecimal ticketPrice) {
-	this.ticketPrice = ticketPrice;
+    	this.ticketPrice = ticketPrice;
     }
 
     public Source getSource() {
-	return source;
+    	return source;
     }
 
     public void setSource(Source source) {
-	this.source = source;
+    	this.source = source;
     }
 }

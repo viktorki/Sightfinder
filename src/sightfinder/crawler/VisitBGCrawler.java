@@ -3,9 +3,11 @@ package sightfinder.crawler;
 import edu.uci.ics.crawler4j.crawler.Page;
 import edu.uci.ics.crawler4j.crawler.WebCrawler;
 import edu.uci.ics.crawler4j.url.WebURL;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+
 import sightfinder.crawler.content.LandmarkData;
 import sightfinder.crawler.content.VisitBGLandmark;
 import sightfinder.util.Constants;
@@ -14,7 +16,7 @@ import java.io.IOException;
 
 
 public class VisitBGCrawler extends WebCrawler {
-
+	
     @Override
     public boolean shouldVisit(Page referringPage, WebURL url) {
         return url.getURL().startsWith(Constants.VISIT_BG_URL);
