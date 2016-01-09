@@ -54,7 +54,7 @@ public class LandmarkCrawlController {
 	@RequestMapping("/pochivka-bg")
 	public void crawlPochivkaBG() {
 		CrawlController controller = newCrawlControllerInstance();
-		for (int i = Constants.POCHIVKA_BG_OBJECTS_LIST_FIRST_PAG_INDEX; i <= Constants.POCHIVKA_BG_OBJECT_LIST_PAGES_COUNT; ++i) {
+		for (int i = Constants.POCHIVKA_BG_OBJECTS_LIST_FIRST_PAGE_INDEX; i <= Constants.POCHIVKA_BG_OBJECT_LIST_PAGES_COUNT; ++i) {
 			controller.addSeed(Constants.POCHIVKA_BG_OBJECTS_URL + i);
 		}
 		controller.start(PochivkaBGCrawler.class, Constants.NUMBER_OF_CRAWLERS);
