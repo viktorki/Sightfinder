@@ -6,6 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 import sightfinder.dao.LandmarkDAO;
 import sightfinder.model.Landmark;
 
+import java.util.List;
+
 @Service
 @Transactional
 public class LandmarkService {
@@ -15,5 +17,9 @@ public class LandmarkService {
 
     public Landmark save(Landmark landmark) {
     	return landmarkDAO.save(landmark);
+    }
+
+    public Iterable<Landmark> getLandmarks() {
+        return landmarkDAO.findAll();
     }
 }
