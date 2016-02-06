@@ -22,4 +22,8 @@ public class LandmarkService {
     public Iterable<Landmark> getLandmarks() {
         return landmarkDAO.findAll();
     }
+
+    public Landmark findLandmarkById(Long id) {
+        return landmarkDAO.findOne(id);
+    }
 }

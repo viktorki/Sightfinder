@@ -5,13 +5,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import sightfinder.model.Landmark;
 import sightfinder.service.LandmarkService;
 
 /**
  * Created by krasimira on 31.01.16.
  */
-@Controller
+@RestController
 @RequestMapping("/landmarks")
 public class LandmarksController {
 
@@ -19,7 +20,6 @@ public class LandmarksController {
     LandmarkService landmarkService;
 
     @RequestMapping(method = RequestMethod.GET)
-    @ResponseBody
     public Iterable<Landmark> getAllLandmarks() {
         return landmarkService.getLandmarks();
     }

@@ -139,4 +139,17 @@ public class Landmark implements Serializable {
     public void setSource(Source source) {
     	this.source = source;
     }
+
+    public Landmark mergeWith(Landmark anotherLandmark) {
+        Landmark newLandmark = new Landmark();
+        newLandmark.setId(this.id);
+        newLandmark.setLandmarkType(this.landmarkType != null ? this.landmarkType : anotherLandmark.getLandmarkType());
+        newLandmark.setDescription(this.description + ". " + anotherLandmark.getDescription());
+        newLandmark.setName(this.name);
+//        newLandmark.setSource();
+        newLandmark.setLongitude(this.longitude != null ? this.longitude : anotherLandmark.getLongitude());
+        newLandmark.setLatitude(this.latitude != null ? this.latitude : anotherLandmark.getLatitude());
+        return newLandmark;
+    }
+
 }

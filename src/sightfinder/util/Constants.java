@@ -72,4 +72,6 @@ public class Constants {
 
 	public static final String COOKIE_HEADER_VALUE = "isMobile=0; showMobile=0;";
 
+    public static final String DBPEDIA_URL = "http://bg.dbpedia.org/lucene/search?q=%s";
+
 }
