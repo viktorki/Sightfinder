@@ -145,9 +145,8 @@ public class Landmark implements Serializable {
             Landmark newLandmark = new Landmark();
             newLandmark.setId(this.id);
             newLandmark.setLandmarkType(this.landmarkType != null ? this.landmarkType : anotherLandmark.getLandmarkType());
-            newLandmark.setDescription(this.description + ". " + anotherLandmark.getDescription());
+            newLandmark.setDescription(mergeDescriptions(description, anotherLandmark.getDescription()));
             newLandmark.setName(this.name);
-            //        newLandmark.setSource();
             newLandmark.setLongitude(this.longitude != null ? this.longitude : anotherLandmark.getLongitude());
             newLandmark.setLatitude(this.latitude != null ? this.latitude : anotherLandmark.getLatitude());
             return newLandmark;
@@ -155,5 +154,18 @@ public class Landmark implements Serializable {
             return this;
         }
     }
+
+    private static String mergeDescriptions(String description1, String description2) {
+        if (description1.equals(description2)) {
+            return description1;
+        }
+
+        if (description1.endsWith(description2)) {
+            return description1;
+        }
+
+        return description1 + ". " + description2;
+    }
+
 
 }

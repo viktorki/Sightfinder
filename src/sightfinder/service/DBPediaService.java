@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import sightfinder.model.Landmark;
 import sightfinder.util.Constants;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -24,9 +25,13 @@ public class DBPediaService {
     @Autowired
     LandmarkService landmarkService;
 
+    private Map<Long, Landmark> landmarks;
+
+
+
     public Map<Long, List<String>> getDBPediaResources() throws IOException {
         Map<Long, List<String>> resourcesPerLandmark = new HashMap<>();
-        for (Landmark landmark: landmarkService.getLandmarks()) {
+        for (Landmark landmark: landmarks.values()) {
             long id = landmark.getId();
 
             if (!resourcesPerLandmark.containsKey(id)) {
@@ -84,10 +89,10 @@ public class DBPediaService {
     }
     
     private Landmark mergeLandmarks(long landmsrkId, List<Long> relatedLandmarksIds) {
-        Landmark mergedLandmark = landmarkService.findLandmarkById(landmsrkId);
+        Landmark mergedLandmark = landmarks.get(landmsrkId);
         if (relatedLandmarksIds.size() > 0) {
             mergedLandmark = relatedLandmarksIds.stream().
-                    map(id -> landmarkService.findLandmarkById(id)).
+                    map(id -> landmarks.get(id)).
                     reduce((landmark1, landmark2) -> (landmark1.mergeWith(landmark2))).get();
         }
 
@@ -104,5 +109,13 @@ public class DBPediaService {
         }
 
         return dbpediaUrl;
+    }
+
+    @PostConstruct
+    private void getIdsToLandmarks() {
+        landmarks = new HashMap<>();
+        for (Landmark landmark: landmarkService.getLandmarks()) {
+            landmarks.put(landmark.getId(), landmark);
+        }
     }
 }
