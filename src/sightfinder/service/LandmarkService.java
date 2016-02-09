@@ -3,10 +3,10 @@ package sightfinder.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import sightfinder.dao.LandmarkDAO;
 import sightfinder.model.Landmark;
-
-import java.util.List;
+import sightfinder.util.Source;
 
 @Service
 @Transactional
@@ -25,5 +25,9 @@ public class LandmarkService {
 
     public Landmark findLandmarkById(Long id) {
         return landmarkDAO.findOne(id);
+    }
+    
+    public Iterable<Landmark> findLandmarksBySource(Source source) {
+    	return landmarkDAO.findBySource(source);
     }
 }

@@ -72,6 +72,17 @@ public class Constants {
 
 	public static final String COOKIE_HEADER_VALUE = "isMobile=0; showMobile=0;";
 
-    public static final String DBPEDIA_URL = "http://bg.dbpedia.org/lucene/search?q=%s";
+    public static final String DBPEDIA_URL = "http://bg.dbpedia.org";
+    
+    public static final String DBPEDIA_SEARCH_URL = DBPEDIA_URL + "/lucene/search?q=%s";
+    
+    
+    public static final Source MERGED_ITEMS_SOURCE = null;
+    
+    public static final String DBPEDIA_EXTERNAL_LINK = "dbo:wikiPageExternalLink";
+
+	public static final String FACBOOK_URL = "www.facebook.com/";
+
+	public static final String FACEBOOK_INFO_TAB_PATH = "/info?tab=page_info";
 
 }

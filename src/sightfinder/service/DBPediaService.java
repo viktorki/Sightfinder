@@ -1,20 +1,27 @@
 package sightfinder.service;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import sightfinder.model.Landmark;
 import sightfinder.util.Constants;
-
-import javax.annotation.PostConstruct;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Created by krasimira on 04.02.16.
@@ -88,8 +95,44 @@ public class DBPediaService {
         return uniqueLandmarks;
     }
     
-    private Landmark mergeLandmarks(long landmsrkId, List<Long> relatedLandmarksIds) {
-        Landmark mergedLandmark = landmarks.get(landmsrkId);
+    public List<String> fetchExternalLinks(Landmark landmark) throws IOException {
+    	List<String> allExternalLinks = new ArrayList<String>();
+    	
+    	Document doc = Jsoup.connect(getDBPediaURL(landmark.getName())).get();
+        Element e = doc.getElementById("results");
+        if (e != null) {
+            Elements resources = e.getElementsByClass("source");
+            if (resources != null) {
+            	for (String resource: resources.stream().map(r -> r.getElementsByTag("a").get(0).attr("href")).collect(Collectors.toList())) {
+					try {
+						List<String> externalLinks = this.getExternalLinksFromResource(resource);
+	        			allExternalLinks.addAll(externalLinks);
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					};
+            	}
+            }
+        }
+        
+    	return allExternalLinks;
+    }
+    
+    private List<String> getExternalLinksFromResource(String resource) throws IOException {
+    	Document doc = Jsoup.connect(Constants.DBPEDIA_URL + resource).get();
+        Elements elements = doc.getElementsByClass("even");
+        elements.addAll(doc.getElementsByClass("odd"));
+        List<String> links = new ArrayList<String>();
+        for (Element e: elements) {
+        	Elements hrefs = e.getElementsByClass("explicit");
+        	if (hrefs.get(0).text().equals(Constants.DBPEDIA_EXTERNAL_LINK)) {
+        		links.add(hrefs.get(1).text());
+        	}
+        }
+		return links;
+	}
+    
+	private Landmark mergeLandmarks(long landmsrkId, List<Long> relatedLandmarksIds) {
+    	Landmark mergedLandmark = landmarks.get(landmsrkId);
         if (relatedLandmarksIds.size() > 0) {
             mergedLandmark = relatedLandmarksIds.stream().
                     map(id -> landmarks.get(id)).
@@ -102,7 +145,7 @@ public class DBPediaService {
     private static String getDBPediaURL(String landmarkName) {
         String dbpediaUrl = null;
         try {
-            dbpediaUrl = String.format(Constants.DBPEDIA_URL, URLEncoder.encode(landmarkName, "UTF-8"));
+            dbpediaUrl = String.format(Constants.DBPEDIA_SEARCH_URL, URLEncoder.encode(landmarkName, "UTF-8"));
             dbpediaUrl += "&_form=%2F";
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
