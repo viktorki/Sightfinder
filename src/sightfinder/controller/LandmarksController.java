@@ -1,19 +1,25 @@
 package sightfinder.controller;
 
+<<<<<<< 3a7a5561ae9c61907ba64542b4207c863f6d01dd
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import sightfinder.model.Landmark;
 import sightfinder.model.LandmarkType;
 import sightfinder.service.DBPediaService;
 import sightfinder.service.FacebookService;
+import sightfinder.service.IRService;
 import sightfinder.service.LandmarkService;
 import sightfinder.service.LandmarkTypeService;
 
@@ -32,6 +38,9 @@ public class LandmarksController {
 
     @Autowired
     LandmarkService landmarkService;
+    
+    @Autowired
+    IRService informationRetrievalService;
 
     @Autowired
     LandmarkTypeService landmarkTypeService;
@@ -77,5 +86,25 @@ public class LandmarksController {
 			}
     	}
     	return updatedLanmarks;
+    }
+
+    @RequestMapping(value = "/tf-idf", method = RequestMethod.GET)
+    public Double tfidf(@RequestParam String word, @RequestParam Long documentID) {
+    	Iterable<Landmark> landmarks = landmarkService.getLandmarks();
+    	List<Landmark> landmarksArray = StreamSupport.stream(
+			landmarks.spliterator(), false).collect(Collectors.toList());
+    	Map<Long, String> descriptions = landmarksArray.stream().collect(
+			Collectors.toMap(landmark -> (Long) landmark.getId(), landmark -> landmark.getDescription()));
+		return informationRetrievalService.createTFIDF(descriptions, word, documentID);
+    }
+    
+    @RequestMapping(value = "/tf", method = RequestMethod.GET)
+    public Map<String, Map<Long, Integer>> tf() {
+    	Iterable<Landmark> landmarks = landmarkService.getLandmarks();
+    	List<Landmark> landmarksArray = StreamSupport.stream(
+			landmarks.spliterator(), false).collect(Collectors.toList());
+    	Map<Long, String> descriptions = landmarksArray.stream().collect(
+			Collectors.toMap(landmark -> (Long) landmark.getId(), landmark -> landmark.getDescription()));
+		return informationRetrievalService.termFrequencies(descriptions);
     }
 }
