@@ -1,6 +1,9 @@
 package sightfinder.model;
 
 import java.io.Serializable;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -13,6 +16,10 @@ import javax.persistence.Table;
 public class LandmarkType implements Serializable {
 
     private static final long serialVersionUID = 7870576408440968981L;
+    
+    private static final Set<Long> TYPES_WITH_WORKING_TIME =  Stream.of(
+		1L, 2L, 4L, 6L, 9L, 11L, 12L, 13L, 14L, 15L, 16L, 19L, 21L, 23L, 24L, 27L
+    ).collect(Collectors.toSet());
 
     @Id
     @GeneratedValue
@@ -37,4 +44,8 @@ public class LandmarkType implements Serializable {
     public void setName(String name) {
     	this.name = name;
     }
+
+	public boolean hasWorkingTime() {
+		return TYPES_WITH_WORKING_TIME.contains(this.id);
+	}
 }

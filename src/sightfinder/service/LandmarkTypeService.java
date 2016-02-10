@@ -25,6 +25,10 @@ public class LandmarkTypeService {
 
         return landmarkType;
     }
+    
+    public Iterable<LandmarkType> getLandmarkTypes() {
+        return landmarkTypeDAO.findAll();
+    }
 
     private LandmarkType save(LandmarkType landmarkType) {
     	return landmarkTypeDAO.save(landmarkType);
