@@ -89,16 +89,16 @@ public class LandmarksController {
     }
 
     @RequestMapping(value = "/tf-idf", method = RequestMethod.GET)
-    public Double tfidf(@RequestParam String word, @RequestParam Long documentID) {
+    public Double tfidf(@RequestParam String term, @RequestParam Long documentID) {
     	Iterable<Landmark> landmarks = landmarkService.getLandmarks();
     	List<Landmark> landmarksArray = StreamSupport.stream(
 			landmarks.spliterator(), false).collect(Collectors.toList());
     	Map<Long, String> descriptions = landmarksArray.stream().collect(
 			Collectors.toMap(landmark -> (Long) landmark.getId(), landmark -> landmark.getDescription()));
-		return informationRetrievalService.createTFIDF(descriptions, word, documentID);
+		return informationRetrievalService.createTFIDF(descriptions, term, documentID);
     }
     
-    @RequestMapping(value = "/tf", method = RequestMethod.GET)
+    @RequestMapping(value = "/term-frequencies", method = RequestMethod.GET)
     public Map<String, Map<Long, Integer>> tf() {
     	Iterable<Landmark> landmarks = landmarkService.getLandmarks();
     	List<Landmark> landmarksArray = StreamSupport.stream(
