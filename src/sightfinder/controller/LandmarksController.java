@@ -1,6 +1,5 @@
 package sightfinder.controller;
 
-<<<<<<< 3a7a5561ae9c61907ba64542b4207c863f6d01dd
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
