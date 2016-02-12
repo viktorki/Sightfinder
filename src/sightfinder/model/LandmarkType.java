@@ -1,9 +1,6 @@
 package sightfinder.model;
 
 import java.io.Serializable;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,37 +12,40 @@ import javax.persistence.Table;
 @Table(name = "landmark_type")
 public class LandmarkType implements Serializable {
 
-    private static final long serialVersionUID = 7870576408440968981L;
-    
-    private static final Set<Long> TYPES_WITH_WORKING_TIME =  Stream.of(
-		1L, 2L, 4L, 6L, 9L, 11L, 12L, 13L, 14L, 15L, 16L, 19L, 21L, 23L, 24L, 27L
-    ).collect(Collectors.toSet());
+	private static final long serialVersionUID = 7870576408440968981L;
 
-    @Id
-    @GeneratedValue
-    @Column(name = "id")
-    private Long id;
+	@Id
+	@GeneratedValue
+	@Column(name = "id")
+	private Long id;
 
-    @Column(name = "name", unique = true)
-    private String name;
+	@Column(name = "name", unique = true)
+	private String name;
 
-    public Long getId() {
-    	return id;
-    }
+	@Column(name = "has_working_time")
+	private Boolean hasWorkingTime;
 
-    public void setId(Long id) {
-    	this.id = id;
-    }
+	public Long getId() {
+		return id;
+	}
 
-    public String getName() {
-    	return name;
-    }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    public void setName(String name) {
-    	this.name = name;
-    }
+	public String getName() {
+		return name;
+	}
 
-	public boolean hasWorkingTime() {
-		return TYPES_WITH_WORKING_TIME.contains(this.id);
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public Boolean getHasWorkingTime() {
+		return hasWorkingTime;
+	}
+
+	public void setHasWorkingTime(Boolean hasWorkingTime) {
+		this.hasWorkingTime = hasWorkingTime;
 	}
 }
