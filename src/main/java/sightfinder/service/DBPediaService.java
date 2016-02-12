@@ -154,7 +154,7 @@ public class DBPediaService {
         return dbpediaUrl;
     }
 
-    @PostConstruct
+    //@PostConstruct
     private void getIdsToLandmarks() {
         landmarks = new HashMap<>();
         for (Landmark landmark: landmarkService.getLandmarks()) {

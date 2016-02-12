@@ -2,7 +2,7 @@ package sightfinder.dao;
 
 import org.springframework.data.repository.CrudRepository;
 
-import sightfinder.model.LandmarkType;
+import main.sightfinder.model.LandmarkType;
 
 public interface LandmarkTypeDAO extends CrudRepository<LandmarkType, Long> {
 

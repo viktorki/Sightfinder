@@ -1,4 +1,4 @@
-package sightfinder.crawler;
+package sightfinder.crawler.config;
 
 import java.util.ArrayList;
 import java.util.List;
