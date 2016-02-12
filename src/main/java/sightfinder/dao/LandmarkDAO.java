@@ -2,8 +2,8 @@ package sightfinder.dao;
 
 import org.springframework.data.repository.CrudRepository;
 
-import main.sightfinder.model.Landmark;
-import main.sightfinder.util.Source;
+import sightfinder.model.Landmark;
+import sightfinder.util.Source;
 
 public interface LandmarkDAO extends CrudRepository<Landmark, Long> {
 	Iterable<Landmark> findBySource(Source source);
