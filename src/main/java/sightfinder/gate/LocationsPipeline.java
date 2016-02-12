@@ -13,7 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Iterator;
+import java.util.*;
 
 /**
  * Created by krasimira on 11.02.16.
@@ -21,10 +21,13 @@ import java.util.Iterator;
 @Service
 public class LocationsPipeline {
 
+    private static String LOOKUP_ANNOTATION = "Lookup";
     private CorpusController corpusController;
 
     @Autowired
     private LandmarkService landmarkService;
+
+    private Iterable<Landmark> landmarks;
 
     public void initAnnie() throws GateException, IOException {
         File pipelineFile = getPipelineGappFile();
@@ -45,11 +48,16 @@ public class LocationsPipeline {
 
     public Corpus getLandmarksCorpus() throws GateException {
         Corpus corpus = Factory.newCorpus("Landmarks corpus");
-        Iterable<Landmark> landmarks = landmarkService.getLandmarks();
 
+
+        int count = 0;
         for (Landmark landmark : landmarks) {
-            Document landmarkDocument = Factory.newDocument(landmark.getDescription());
-            corpus.add(landmarkDocument);
+            if (count++ < 10) {
+                Document landmarkDocument = Factory.newDocument(landmark.getDescription());
+                corpus.add(landmarkDocument);
+            } else {
+                break;
+            }
         }
 
         return corpus;
@@ -67,22 +75,38 @@ public class LocationsPipeline {
 
         Gate.init();
 
+        landmarks = landmarkService.getLandmarks();
+
         LocationsPipeline pipeline = getPipelineWithCorpus();
         pipeline.execute();
 
-        Iterator annotatedLandmarksIterator = pipeline.getLandmarksCorpus().iterator();
+        Iterator annotatedLandmarksIterator = pipeline.corpusController.getCorpus().iterator();
+        Map<String, List<Landmark>> locationToLandmarks = new HashMap<>();
 
         while (annotatedLandmarksIterator.hasNext()) {
             Document landmarkDocument = (Document) annotatedLandmarksIterator.next();
             for (Annotation annotation : landmarkDocument.getAnnotations()) {
-                System.out.print(annotation);
+                if (annotation.getType().equals(LOOKUP_ANNOTATION)) {
+                    long startOffset = annotation.getStartNode().getOffset();
+                    long endOffset = annotation.getEndNode().getOffset();
+                    String locationToken = landmarkDocument.getContent().getContent(startOffset, endOffset).toString();
+
+                    if (!locationToLandmarks.containsKey(locationToken)) {
+                        locationToLandmarks.put(locationToken, new ArrayList<>());
+                    }
+
+                    //locationToLandmarks.get(locationToken).add(landmarkDocument)
+                    System.out.println(locationToken);
+                }
             }
         }
+
+        System.out.print("The end!!");
     }
 
     private static File getPipelineGappFile() {
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        URL pipelineResource = classloader.getResource("gate/ling-pipe-pipeline.gapp");
+        URL pipelineResource = classloader.getResource("gate/ling-pipe-pipeline-reduced.gapp");
         File pipelineFile = null;
         try {
             pipelineFile = new File(pipelineResource.toURI());
