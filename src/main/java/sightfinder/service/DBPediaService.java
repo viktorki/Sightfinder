@@ -36,7 +36,7 @@ public class DBPediaService {
 
 
 
-    public Map<Long, List<String>> getDBPediaResources() throws IOException {
+    public Map<Long, List<String>> getDBPediaResources() {
         Map<Long, List<String>> resourcesPerLandmark = new HashMap<>();
         for (Landmark landmark: landmarks.values()) {
             long id = landmark.getId();
@@ -44,17 +44,26 @@ public class DBPediaService {
             if (!resourcesPerLandmark.containsKey(id)) {
                 resourcesPerLandmark.put(id, new ArrayList<>());
             }
+            resourcesPerLandmark.get(id).addAll(getResources(landmark));
+        }
 
+        return resourcesPerLandmark;
+    }
+
+    private List<String> getResources(Landmark landmark) {
+        List<String> landmarkResources = new ArrayList<>();
+        try {
             Document doc = Jsoup.connect(getDBPediaURL(landmark.getName())).get();
             Element e = doc.getElementById("results");
             if (e != null) {
                 Elements resources = e.getElementsByClass("source");
-                resourcesPerLandmark.get(id).addAll(
-                        resources.stream().map(r -> r.text()).collect(Collectors.toList()));
+                landmarkResources = resources.stream().map(r -> r.text()).collect(Collectors.toList());
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
-        return resourcesPerLandmark;
+        return landmarkResources;
     }
 
     public Map<Long, List<Long>> findDuplicates(Map<Long, List<String>> landmarksResources) {
@@ -76,8 +85,8 @@ public class DBPediaService {
         return possibleDuplicates;
     }
 
-    public List<Landmark> getUniqueLandmarks(Map<Long, List<String>> landmarksResources) {
-        Map<Long, List<Long>> possibleDuplicates = findDuplicates(landmarksResources);
+    public List<Landmark> getUniqueLandmarks() {
+        Map<Long, List<Long>> possibleDuplicates = findDuplicates(getDBPediaResources());
 
         List<Landmark> uniqueLandmarks = new ArrayList<>();
         List<Long> includedLandmarks = new ArrayList<>();

@@ -1,4 +1,4 @@
-package sightfinder.controller;
+package sightfinder.controller.duplications;
 
 import java.io.IOException;
 import java.util.List;
@@ -33,13 +33,8 @@ public class DBPediaController {
         return dbPediaService.getDBPediaResources();
     }
 
-    @RequestMapping(value = "/duplicates", method = RequestMethod.POST)
-    public Map<Long, List<Long>> findDuplicates(@RequestBody Map<Long, List<String>> landmarkResources) {
-        return dbPediaService.findDuplicates(landmarkResources);
-    }
-
     @RequestMapping(value = "/landmarks", method = RequestMethod.POST)
-    public List<Landmark> getUniqueLandmarks(@RequestBody Map<Long, List<String>> landmarkResources) {
-        return dbPediaService.getUniqueLandmarks(landmarkResources);
+    public List<Landmark> getUniqueLandmarks() {
+        return dbPediaService.getUniqueLandmarks();
     }
 }
