@@ -34,7 +34,7 @@ public class DBPediaController {
         return dbPediaService.getDBPediaResources();
     }
 
-    @RequestMapping(value = "/landmarks", method = RequestMethod.POST)
+    @RequestMapping(value = "/landmarks", method = RequestMethod.GET)
     public List<MergedLandmark> getUniqueLandmarks() {
         return dbPediaService.getUniqueLandmarks();
     }

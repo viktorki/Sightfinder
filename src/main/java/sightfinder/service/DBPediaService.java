@@ -157,13 +157,13 @@ public class DBPediaService {
 		return links;
 	}
     
-	private MergedLandmark mergeLandmarks(long landmsrkId, List<Long> relatedLandmarksIds) {
-    	MergedLandmark mergedLandmark = MergedLandmark.convert(landmarks.get(landmsrkId));
+	private MergedLandmark mergeLandmarks(long landmarkId, List<Long> relatedLandmarksIds) {
+    	MergedLandmark mergedLandmark = MergedLandmark.convert(landmarks.get(landmarkId));
         if (relatedLandmarksIds.size() > 0) {
             mergedLandmark = relatedLandmarksIds.stream().
                     map(id -> landmarks.get(id)).
                     map(landmark -> MergedLandmark.convert(landmark)).
-                    reduce((landmark1, landmark2) -> (landmark1.mergeWith(landmark1))).get();
+                    reduce((landmark1, landmark2) -> (landmark1.mergeWith(landmark2))).get();
         }
 
         return mergedLandmark;
