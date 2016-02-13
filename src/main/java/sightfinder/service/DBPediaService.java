@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -25,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import sightfinder.model.Landmark;
+import sightfinder.model.MergedLandmark;
 import sightfinder.util.Constants;
 
 /**
@@ -47,8 +49,9 @@ public class DBPediaService {
             if (dbPediaResourcesFile == null) {
                 resourcesPerLandmark = retrieveResourses();
             } else {
-                resourcesPerLandmark =
-                        new ObjectMapper().readValue(dbPediaResourcesFile, HashMap.class);
+                TypeReference<HashMap<Long, List<String>>> typeRef
+                        = new TypeReference<HashMap<Long, List<String>>>() {};
+                resourcesPerLandmark = new ObjectMapper().readValue(dbPediaResourcesFile, typeRef);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -103,17 +106,17 @@ public class DBPediaService {
         return possibleDuplicates;
     }
 
-    public List<Landmark> getUniqueLandmarks() {
+    public List<MergedLandmark> getUniqueLandmarks() {
         Map<Long, List<Long>> possibleDuplicates = findDuplicates(getDBPediaResources());
 
-        List<Landmark> uniqueLandmarks = new ArrayList<>();
+        List<MergedLandmark> uniqueLandmarks = new ArrayList<>();
         List<Long> includedLandmarks = new ArrayList<>();
 
         for (Long id: possibleDuplicates.keySet()) {
             List<Long> relatedLandmarks = possibleDuplicates.get(id);
 
             if (!includedLandmarks.contains(id)) {
-                Landmark mergedLandmark = mergeLandmarks(id, relatedLandmarks);
+                MergedLandmark mergedLandmark = mergeLandmarks(id, relatedLandmarks);
                 uniqueLandmarks.add(mergedLandmark);
                 includedLandmarks.addAll(relatedLandmarks);
             }
@@ -154,12 +157,13 @@ public class DBPediaService {
 		return links;
 	}
     
-	private Landmark mergeLandmarks(long landmsrkId, List<Long> relatedLandmarksIds) {
-    	Landmark mergedLandmark = landmarks.get(landmsrkId);
+	private MergedLandmark mergeLandmarks(long landmsrkId, List<Long> relatedLandmarksIds) {
+    	MergedLandmark mergedLandmark = MergedLandmark.convert(landmarks.get(landmsrkId));
         if (relatedLandmarksIds.size() > 0) {
             mergedLandmark = relatedLandmarksIds.stream().
                     map(id -> landmarks.get(id)).
-                    reduce((landmark1, landmark2) -> (landmark1.mergeWith(landmark2))).get();
+                    map(landmark -> MergedLandmark.convert(landmark)).
+                    reduce((landmark1, landmark2) -> (landmark1.mergeWith(landmark1))).get();
         }
 
         return mergedLandmark;

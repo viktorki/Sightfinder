@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import sightfinder.model.Landmark;
+import sightfinder.model.MergedLandmark;
 import sightfinder.service.DBPediaService;
 import sightfinder.service.LandmarkService;
 
@@ -34,7 +35,7 @@ public class DBPediaController {
     }
 
     @RequestMapping(value = "/landmarks", method = RequestMethod.POST)
-    public List<Landmark> getUniqueLandmarks() {
+    public List<MergedLandmark> getUniqueLandmarks() {
         return dbPediaService.getUniqueLandmarks();
     }
 }

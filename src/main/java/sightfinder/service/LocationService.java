@@ -4,12 +4,14 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import sightfinder.model.Landmark;
+import sightfinder.model.MergedLandmark;
 import sightfinder.util.Constants;
 
 @Service
@@ -18,25 +20,28 @@ public class LocationService {
 	@Autowired
 	private LandmarkService landmarkService;
 
-	public List<Landmark> getUniqueLandmarksByLocation() {
+	public List<MergedLandmark> getUniqueLandmarksByLocation() {
 		Iterable<Landmark> landmarkList = landmarkService.getLandmarks();
-		return getUniqueLandmarksByLocation(Lists.newArrayList(landmarkList));
+
+		List<MergedLandmark> mergedList = Lists.newArrayList(landmarkList).stream().map(landmark -> MergedLandmark.convert(landmark)).collect(Collectors.toList());
+		return getUniqueLandmarksByLocation(mergedList);
 	}
 
-	public List<Landmark> getUniqueLandmarksByLocation(List<Landmark> landmarkList) {
-		Set<Long> mergedLandmarkIds = new HashSet<Long>();
-		List<Landmark> uniqueLandmarkList = new ArrayList<Landmark>();
+	public List<MergedLandmark> getUniqueLandmarksByLocation(List<MergedLandmark> landmarkList) {
+		Set<Long> mergedLandmarkIds = new HashSet<>();
+		List<MergedLandmark> uniqueLandmarkList = new ArrayList<>();
 
-		for (Landmark landmark : landmarkList) {
-			if (!mergedLandmarkIds.contains(landmark.getId())) {
+		for (MergedLandmark landmark : landmarkList) {
+			if (!mergedLandmarkIds.contains(landmark.getIds().get(0))) {
+				mergedLandmarkIds.addAll(landmark.getIds());
 				if (landmark.getLatitude() != null && landmark.getLongitude() != null) {
 					List<Landmark> duplicateLandmarkList = landmarkService.findNearestLandmarks(landmark.getLatitude(),
 							landmark.getLongitude(), Constants.DISTANCE_ERROR);
 
-					for (Landmark duplicateLandmark : duplicateLandmarkList) {
-						if (!landmark.getId().equals(duplicateLandmark.getId())) {
-							landmark.getDescription().concat(" ").concat(duplicateLandmark.getDescription());
-							mergedLandmarkIds.add(duplicateLandmark.getId());
+					for (MergedLandmark secondLandmarks : landmarkList) {
+						if (secondLandmarks.hasIntersectionWith(duplicateLandmarkList)) {
+							landmark.mergeWith(secondLandmarks);
+							mergedLandmarkIds.addAll(secondLandmarks.getIds());
 						}
 					}
 				}

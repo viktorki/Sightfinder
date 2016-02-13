@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import sightfinder.model.Landmark;
+import sightfinder.model.MergedLandmark;
 import sightfinder.service.DBPediaService;
 import sightfinder.service.LocationService;
 
@@ -24,7 +25,7 @@ public class UniqueLandmarksController {
     private DBPediaService dbPediaService;
 
     @RequestMapping(value = "/landmarks")
-    public List<Landmark> getUniqueLandmarksOverall() {
+    public List<MergedLandmark> getUniqueLandmarksOverall() {
         return locationService.getUniqueLandmarksByLocation(dbPediaService.getUniqueLandmarks());
     }
 }

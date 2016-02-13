@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import sightfinder.model.Landmark;
+import sightfinder.model.MergedLandmark;
 import sightfinder.service.LocationService;
 
 @RestController
@@ -17,7 +18,7 @@ public class LocationController {
 	private LocationService locationService;
 
 	@RequestMapping(value = "/landmarks")
-	public List<Landmark> getUniqueLandmarksByLocation() {
+	public List<MergedLandmark> getUniqueLandmarksByLocation() {
 		return locationService.getUniqueLandmarksByLocation();
 	}
 }
