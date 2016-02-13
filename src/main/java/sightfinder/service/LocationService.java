@@ -32,7 +32,7 @@ public class LocationService {
 		List<MergedLandmark> uniqueLandmarkList = new ArrayList<>();
 
 		for (MergedLandmark landmark : landmarkList) {
-			if (!mergedLandmarkIds.contains(landmark.getIds().get(0))) {
+			if (!mergedLandmarkIds.contains(landmark.getGroupId())) {
 				mergedLandmarkIds.addAll(landmark.getIds());
 				if (landmark.getLatitude() != null && landmark.getLongitude() != null) {
 					List<Landmark> duplicateLandmarkList = landmarkService.findNearestLandmarks(landmark.getLatitude(),

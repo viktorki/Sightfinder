@@ -3,28 +3,29 @@ package sightfinder.model;
 import sightfinder.util.Source;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by krasimira on 13.02.16.
  */
 public class MergedLandmark {
 
-    private List<Long> ids;
+    private Set<Long> ids;
 
-    private List<String> names;
+    private Set<String> names;
 
-    private List<LandmarkType> landmarkTypes;
+    private Set<LandmarkType> landmarkTypes;
 
-    private List<Source> sources;
+    private Set<Source> sources;
 
     private Double latitude;
 
     private Double longitude;
 
-    private List<String> descriptions;
+    private Set<String> descriptions;
 
     private Date workingTimeFrom;
 
@@ -33,22 +34,22 @@ public class MergedLandmark {
     private BigDecimal ticketPrice;
 
     public MergedLandmark() {
-        ids = new ArrayList<>();
-        descriptions = new ArrayList<>();
-        landmarkTypes = new ArrayList<>();
-        names = new ArrayList<>();
-        sources = new ArrayList<>();
+        ids = new HashSet<>();
+        descriptions = new HashSet<>();
+        landmarkTypes = new HashSet<>();
+        names = new HashSet<>();
+        sources = new HashSet<>();
     }
 
-    public List<Long> getIds() {
+    public Set<Long> getIds() {
         return ids;
     }
 
-    public List<LandmarkType> getLandmarkTypes() {
+    public Set<LandmarkType> getLandmarkTypes() {
         return landmarkTypes;
     }
 
-    public List<String> getNames() {
+    public Set<String> getNames() {
         return names;
     }
 
@@ -68,7 +69,7 @@ public class MergedLandmark {
         this.longitude = longitude;
     }
 
-    public List<String> getDescriptions() {
+    public Set<String> getDescriptions() {
         return descriptions;
     }
 
@@ -96,7 +97,7 @@ public class MergedLandmark {
         this.workingTimeTo = workingTimeTo;
     }
 
-    public List<Source> getSources() {
+    public Set<Source> getSources() {
         return sources;
     }
 
@@ -166,5 +167,9 @@ public class MergedLandmark {
             }
         }
         return false;
+    }
+
+    public Long getGroupId() {
+        return ids.iterator().next();
     }
 }
