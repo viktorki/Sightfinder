@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,10 @@ public class LocationService {
 
 	public List<Landmark> getUniqueLandmarksByLocation() {
 		Iterable<Landmark> landmarkList = landmarkService.getLandmarks();
+		return getUniqueLandmarksByLocation(Lists.newArrayList(landmarkList));
+	}
+
+	public List<Landmark> getUniqueLandmarksByLocation(List<Landmark> landmarkList) {
 		Set<Long> mergedLandmarkIds = new HashSet<Long>();
 		List<Landmark> uniqueLandmarkList = new ArrayList<Landmark>();
 

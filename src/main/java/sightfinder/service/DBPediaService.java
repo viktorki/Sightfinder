@@ -1,7 +1,10 @@
 package sightfinder.service;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,6 +16,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -34,9 +38,26 @@ public class DBPediaService {
 
     private Map<Long, Landmark> landmarks;
 
-
-
     public Map<Long, List<String>> getDBPediaResources() {
+        Map<Long, List<String>> resourcesPerLandmark = new HashMap<>();
+
+        File dbPediaResourcesFile = getDBPediaResourcesFile();
+
+        try {
+            if (dbPediaResourcesFile == null) {
+                resourcesPerLandmark = retrieveResourses();
+            } else {
+                resourcesPerLandmark =
+                        new ObjectMapper().readValue(dbPediaResourcesFile, HashMap.class);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return resourcesPerLandmark;
+    }
+
+    private Map<Long, List<String>> retrieveResourses() throws IOException {
         Map<Long, List<String>> resourcesPerLandmark = new HashMap<>();
         for (Landmark landmark: landmarks.values()) {
             long id = landmark.getId();
@@ -48,19 +69,16 @@ public class DBPediaService {
         }
 
         return resourcesPerLandmark;
+
     }
 
-    private List<String> getResources(Landmark landmark) {
+    private List<String> getResources(Landmark landmark) throws IOException {
         List<String> landmarkResources = new ArrayList<>();
-        try {
-            Document doc = Jsoup.connect(getDBPediaURL(landmark.getName())).get();
-            Element e = doc.getElementById("results");
-            if (e != null) {
-                Elements resources = e.getElementsByClass("source");
-                landmarkResources = resources.stream().map(r -> r.text()).collect(Collectors.toList());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        Document doc = Jsoup.connect(getDBPediaURL(landmark.getName())).get();
+        Element e = doc.getElementById("results");
+        if (e != null) {
+            Elements resources = e.getElementsByClass("source");
+            landmarkResources = resources.stream().map(r -> r.text()).collect(Collectors.toList());
         }
 
         return landmarkResources;
@@ -159,7 +177,20 @@ public class DBPediaService {
         return dbpediaUrl;
     }
 
-    //@PostConstruct
+    private static File getDBPediaResourcesFile() {
+        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+        URL resourseURL = classloader.getResource("dbpedia/dbpedia-resources");
+        File dbpediaResourcesFile = null;
+        try {
+            dbpediaResourcesFile = new File(resourseURL.toURI());
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+
+        return dbpediaResourcesFile;
+    }
+
+    @PostConstruct
     private void getIdsToLandmarks() {
         landmarks = new HashMap<>();
         for (Landmark landmark: landmarkService.getLandmarks()) {
