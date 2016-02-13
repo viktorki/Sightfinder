@@ -1,5 +1,6 @@
 package sightfinder.gate;
 
+import com.google.common.collect.Lists;
 import gate.*;
 import gate.util.GateException;
 import gate.util.Out;
@@ -27,7 +28,7 @@ public class LocationsPipeline {
     @Autowired
     private LandmarkService landmarkService;
 
-    private Iterable<Landmark> landmarks;
+    private List<Landmark> landmarks;
 
     public void initAnnie() throws GateException, IOException {
         File pipelineFile = getPipelineGappFile();
@@ -41,23 +42,16 @@ public class LocationsPipeline {
     }
 
     public void execute() throws GateException {
-        Out.prln("Running ANNIE...");
+        Out.prln("Running pipeline...");
         corpusController.execute();
-        Out.prln("...ANNIE complete");
+        Out.prln("...pipeline complete");
     }
 
     public Corpus getLandmarksCorpus() throws GateException {
         Corpus corpus = Factory.newCorpus("Landmarks corpus");
-
-
-        int count = 0;
         for (Landmark landmark : landmarks) {
-            if (count++ < 10) {
-                Document landmarkDocument = Factory.newDocument(landmark.getDescription());
-                corpus.add(landmarkDocument);
-            } else {
-                break;
-            }
+            Document landmarkDocument = Factory.newDocument(landmark.getDescription());
+            corpus.add(landmarkDocument);
         }
 
         return corpus;
@@ -71,37 +65,37 @@ public class LocationsPipeline {
         return pipeline;
     }
 
-    public void listAnnotations() throws GateException, IOException {
+    public Map<String, List<Landmark>> listAnnotations() throws GateException, IOException {
 
         Gate.init();
 
-        landmarks = landmarkService.getLandmarks();
+        landmarks = Lists.newArrayList(landmarkService.getLandmarks());
 
         LocationsPipeline pipeline = getPipelineWithCorpus();
         pipeline.execute();
 
-        Iterator annotatedLandmarksIterator = pipeline.corpusController.getCorpus().iterator();
         Map<String, List<Landmark>> locationToLandmarks = new HashMap<>();
+        Corpus annotatedCorpus =  pipeline.corpusController.getCorpus();
 
-        while (annotatedLandmarksIterator.hasNext()) {
-            Document landmarkDocument = (Document) annotatedLandmarksIterator.next();
+        for (int i = 0; i < annotatedCorpus.size(); i++) {
+            Document landmarkDocument = annotatedCorpus.get(i);
             for (Annotation annotation : landmarkDocument.getAnnotations()) {
                 if (annotation.getType().equals(LOOKUP_ANNOTATION)) {
                     long startOffset = annotation.getStartNode().getOffset();
                     long endOffset = annotation.getEndNode().getOffset();
-                    String locationToken = landmarkDocument.getContent().getContent(startOffset, endOffset).toString();
+                    String locationToken = landmarkDocument.getContent().
+                            getContent(startOffset, endOffset).toString();
 
                     if (!locationToLandmarks.containsKey(locationToken)) {
                         locationToLandmarks.put(locationToken, new ArrayList<>());
                     }
 
-                    //locationToLandmarks.get(locationToken).add(landmarkDocument)
-                    System.out.println(locationToken);
+                    locationToLandmarks.get(locationToken).add(landmarks.get(i));
                 }
             }
         }
 
-        System.out.print("The end!!");
+        return locationToLandmarks;
     }
 
     private static File getPipelineGappFile() {
