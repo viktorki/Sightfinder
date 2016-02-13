@@ -104,12 +104,8 @@ public class DBPediaService {
             Elements resources = e.getElementsByClass("source");
             if (resources != null) {
             	for (String resource: resources.stream().map(r -> r.getElementsByTag("a").get(0).attr("href")).collect(Collectors.toList())) {
-					try {
-						List<String> externalLinks = this.getExternalLinksFromResource(resource);
-	        			allExternalLinks.addAll(externalLinks);
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					};
+                    List<String> externalLinks = this.getExternalLinksFromResource(resource);
+                    allExternalLinks.addAll(externalLinks);
             	}
             }
         }
@@ -154,7 +150,7 @@ public class DBPediaService {
         return dbpediaUrl;
     }
 
-    @PostConstruct
+    //@PostConstruct
     private void getIdsToLandmarks() {
         landmarks = new HashMap<>();
         for (Landmark landmark: landmarkService.getLandmarks()) {
