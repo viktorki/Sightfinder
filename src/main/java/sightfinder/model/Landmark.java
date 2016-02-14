@@ -153,33 +153,7 @@ public class Landmark implements Serializable {
 		this.distance = distance;
 	}
 
-	public Landmark mergeWith(Landmark anotherLandmark) {
-		if (anotherLandmark.getSource() != source) {
-			Landmark newLandmark = new Landmark();
-			newLandmark.setId(this.id);
-			newLandmark.setLandmarkType(this.landmarkType != null ? this.landmarkType : anotherLandmark
-					.getLandmarkType());
-			newLandmark.setDescription(mergeDescriptions(description, anotherLandmark.getDescription()));
-			newLandmark.setName(this.name);
-			newLandmark.setLongitude(this.longitude != null ? this.longitude : anotherLandmark.getLongitude());
-			newLandmark.setLatitude(this.latitude != null ? this.latitude : anotherLandmark.getLatitude());
-			return newLandmark;
-		} else {
-			return this;
-		}
-	}
 
-	private static String mergeDescriptions(String description1, String description2) {
-		if (description1.equals(description2)) {
-			return description1;
-		}
-
-		if (description1.endsWith(description2)) {
-			return description1;
-		}
-
-		return description1 + ". " + description2;
-	}
 
 	public static Comparator<Landmark> LandmarkDistanceComparator = new Comparator<Landmark>() {
 		public int compare(Landmark landmark1, Landmark landmark2) {

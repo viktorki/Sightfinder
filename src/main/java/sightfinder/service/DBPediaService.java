@@ -1,7 +1,10 @@
 package sightfinder.service;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,6 +16,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -21,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import sightfinder.model.Landmark;
+import sightfinder.model.MergedLandmark;
 import sightfinder.util.Constants;
 
 /**
@@ -34,9 +40,27 @@ public class DBPediaService {
 
     private Map<Long, Landmark> landmarks;
 
+    public Map<Long, List<String>> getDBPediaResources() {
+        Map<Long, List<String>> resourcesPerLandmark = new HashMap<>();
 
+        File dbPediaResourcesFile = getDBPediaResourcesFile();
 
-    public Map<Long, List<String>> getDBPediaResources() throws IOException {
+        try {
+            if (dbPediaResourcesFile == null) {
+                resourcesPerLandmark = retrieveResourses();
+            } else {
+                TypeReference<HashMap<Long, List<String>>> typeRef
+                        = new TypeReference<HashMap<Long, List<String>>>() {};
+                resourcesPerLandmark = new ObjectMapper().readValue(dbPediaResourcesFile, typeRef);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return resourcesPerLandmark;
+    }
+
+    private Map<Long, List<String>> retrieveResourses() throws IOException {
         Map<Long, List<String>> resourcesPerLandmark = new HashMap<>();
         for (Landmark landmark: landmarks.values()) {
             long id = landmark.getId();
@@ -44,17 +68,23 @@ public class DBPediaService {
             if (!resourcesPerLandmark.containsKey(id)) {
                 resourcesPerLandmark.put(id, new ArrayList<>());
             }
-
-            Document doc = Jsoup.connect(getDBPediaURL(landmark.getName())).get();
-            Element e = doc.getElementById("results");
-            if (e != null) {
-                Elements resources = e.getElementsByClass("source");
-                resourcesPerLandmark.get(id).addAll(
-                        resources.stream().map(r -> r.text()).collect(Collectors.toList()));
-            }
+            resourcesPerLandmark.get(id).addAll(getResources(landmark));
         }
 
         return resourcesPerLandmark;
+
+    }
+
+    private List<String> getResources(Landmark landmark) throws IOException {
+        List<String> landmarkResources = new ArrayList<>();
+        Document doc = Jsoup.connect(getDBPediaURL(landmark.getName())).get();
+        Element e = doc.getElementById("results");
+        if (e != null) {
+            Elements resources = e.getElementsByClass("source");
+            landmarkResources = resources.stream().map(r -> r.text()).collect(Collectors.toList());
+        }
+
+        return landmarkResources;
     }
 
     public Map<Long, List<Long>> findDuplicates(Map<Long, List<String>> landmarksResources) {
@@ -76,17 +106,17 @@ public class DBPediaService {
         return possibleDuplicates;
     }
 
-    public List<Landmark> getUniqueLandmarks(Map<Long, List<String>> landmarksResources) {
-        Map<Long, List<Long>> possibleDuplicates = findDuplicates(landmarksResources);
+    public List<MergedLandmark> getUniqueLandmarks() {
+        Map<Long, List<Long>> possibleDuplicates = findDuplicates(getDBPediaResources());
 
-        List<Landmark> uniqueLandmarks = new ArrayList<>();
+        List<MergedLandmark> uniqueLandmarks = new ArrayList<>();
         List<Long> includedLandmarks = new ArrayList<>();
 
         for (Long id: possibleDuplicates.keySet()) {
             List<Long> relatedLandmarks = possibleDuplicates.get(id);
 
             if (!includedLandmarks.contains(id)) {
-                Landmark mergedLandmark = mergeLandmarks(id, relatedLandmarks);
+                MergedLandmark mergedLandmark = mergeLandmarks(id, relatedLandmarks);
                 uniqueLandmarks.add(mergedLandmark);
                 includedLandmarks.addAll(relatedLandmarks);
             }
@@ -127,11 +157,12 @@ public class DBPediaService {
 		return links;
 	}
     
-	private Landmark mergeLandmarks(long landmsrkId, List<Long> relatedLandmarksIds) {
-    	Landmark mergedLandmark = landmarks.get(landmsrkId);
+	private MergedLandmark mergeLandmarks(long landmarkId, List<Long> relatedLandmarksIds) {
+    	MergedLandmark mergedLandmark = MergedLandmark.convert(landmarks.get(landmarkId));
         if (relatedLandmarksIds.size() > 0) {
             mergedLandmark = relatedLandmarksIds.stream().
                     map(id -> landmarks.get(id)).
+                    map(landmark -> MergedLandmark.convert(landmark)).
                     reduce((landmark1, landmark2) -> (landmark1.mergeWith(landmark2))).get();
         }
 
@@ -150,7 +181,20 @@ public class DBPediaService {
         return dbpediaUrl;
     }
 
-    //@PostConstruct
+    private static File getDBPediaResourcesFile() {
+        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+        URL resourseURL = classloader.getResource("dbpedia/dbpedia-resources");
+        File dbpediaResourcesFile = null;
+        try {
+            dbpediaResourcesFile = new File(resourseURL.toURI());
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+
+        return dbpediaResourcesFile;
+    }
+
+    @PostConstruct
     private void getIdsToLandmarks() {
         landmarks = new HashMap<>();
         for (Landmark landmark: landmarkService.getLandmarks()) {
