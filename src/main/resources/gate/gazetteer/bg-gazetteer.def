@@ -1,0 +1,4 @@
+location.lst:location
+cities.lst:location:city
+rivers.lst:location:river
+mountains.lst:location:mountain
