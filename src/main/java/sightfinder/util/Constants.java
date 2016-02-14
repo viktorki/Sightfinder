@@ -90,4 +90,6 @@ public class Constants {
 	public static final Long DISTANCE_ERROR = 10L;
 
 	public static final Long RADIUS_OF_EARTH = 6378100L;
+	
+	public static final String STOP_WORDS_FILE = "BTB-StopWordList.txt";
 }
