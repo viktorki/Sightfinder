@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import sightfinder.service.location.RoutesService;
 
 import java.io.IOException;
 import java.util.List;
@@ -23,8 +24,18 @@ public class LocationsAnnotationsController {
     @Autowired
     private LocationsPipeline pipeline;
 
+    @Autowired
+    private RoutesService routesService;
+
     @RequestMapping(method = RequestMethod.GET)
     public Map<String, List<Landmark>> getAllLandmarkTypes() throws GateException, IOException {
         return pipeline.listAnnotations();
     }
+
+    @RequestMapping(value="routes", method = RequestMethod.GET)
+    public Map<String, List<Landmark>> getRoutes() throws GateException, IOException {
+        return routesService.getShortestRoutes();
+    }
+
+
 }
