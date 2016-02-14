@@ -1,4 +1,4 @@
-package sightfinder.controller;
+package sightfinder.controller.duplications;
 
 import java.io.IOException;
 import java.util.List;
@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import sightfinder.model.Landmark;
+import sightfinder.model.MergedLandmark;
 import sightfinder.service.DBPediaService;
 import sightfinder.service.LandmarkService;
 
@@ -33,13 +34,8 @@ public class DBPediaController {
         return dbPediaService.getDBPediaResources();
     }
 
-    @RequestMapping(value = "/duplicates", method = RequestMethod.POST)
-    public Map<Long, List<Long>> findDuplicates(@RequestBody Map<Long, List<String>> landmarkResources) {
-        return dbPediaService.findDuplicates(landmarkResources);
-    }
-
-    @RequestMapping(value = "/landmarks", method = RequestMethod.POST)
-    public List<Landmark> getUniqueLandmarks(@RequestBody Map<Long, List<String>> landmarkResources) {
-        return dbPediaService.getUniqueLandmarks(landmarkResources);
+    @RequestMapping(value = "/landmarks", method = RequestMethod.GET)
+    public List<MergedLandmark> getUniqueLandmarks() {
+        return dbPediaService.getUniqueLandmarks();
     }
 }
