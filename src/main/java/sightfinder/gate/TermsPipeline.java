@@ -41,11 +41,17 @@ public class TermsPipeline {
 	private Set<String> stopWords;
 	private Map<Integer, Long> indexToDocumentID = new HashMap<Integer, Long>();
 
-    public void initAnnie() throws Exception {
-        File pipelineFile = getPipelineGappFile();
-        corpusController = (CorpusController) PersistenceManager.loadObjectFromFile(pipelineFile);
+    private static File getPipelineGappFile() {
+        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+        URL pipelineResource = classloader.getResource("gate/extract-tokens-pipeline.gapp");
+        File pipelineFile = null;
+        try {
+            pipelineFile = new File(pipelineResource.toURI());
+        } catch (URISyntaxException e) {
+            e.printStackTrace();;
+        }
+        return pipelineFile;
     }
-
     private void loadStopWords() {
     	stopWords = new HashSet<String>();
     	File stopWordsFile = new File(Thread.currentThread().getContextClassLoader().getResource(Constants.STOP_WORDS_FILE).getFile());
@@ -59,17 +65,22 @@ public class TermsPipeline {
 		}
 	}
 
-	public void setCorpus(Corpus corpus) {
+    private void initAnnie() throws Exception {
+        File pipelineFile = getPipelineGappFile();
+        corpusController = (CorpusController) PersistenceManager.loadObjectFromFile(pipelineFile);
+    }
+    
+    private void setCorpus(Corpus corpus) {
         corpusController.setCorpus(corpus);
     }
 
-    public void execute() throws GateException {
+    private void execute() throws GateException {
         Out.prln("Running pipeline...");
         corpusController.execute();
         Out.prln("...pipeline complete");
     }
 
-    public Corpus getDocumentsCorpus() throws GateException {
+    private Corpus getDocumentsCorpus() throws GateException {
         Corpus corpus = Factory.newCorpus("Document corpus");
         for (Entry<Long, String> entry : documentsByID.entrySet()) {
             Document landmarkDocument = Factory.newDocument(entry.getValue());
@@ -79,7 +90,7 @@ public class TermsPipeline {
         return corpus;
     }
 
-    public TermsPipeline getPipelineWithCorpus() throws Exception {
+    private TermsPipeline getPipelineWithCorpus() throws Exception {
     	TermsPipeline pipeline = new TermsPipeline();
         pipeline.initAnnie();
         pipeline.setCorpus(getDocumentsCorpus());
@@ -119,17 +130,5 @@ public class TermsPipeline {
         }
 
         return termsByDocument;
-    }
-
-    private static File getPipelineGappFile() {
-        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        URL pipelineResource = classloader.getResource("gate/extract-tokens-pipeline.gapp");
-        File pipelineFile = null;
-        try {
-            pipelineFile = new File(pipelineResource.toURI());
-        } catch (URISyntaxException e) {
-            e.printStackTrace();;
-        }
-        return pipelineFile;
     }
 }

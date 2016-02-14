@@ -10,13 +10,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import sightfinder.gate.SplitToSentencePipeline;
 import sightfinder.gate.TermsPipeline;
 import sightfinder.model.Landmark;
 import sightfinder.model.MergedLandmark;
 import sightfinder.util.Cluster;
+import sightfinder.util.Sentence;
 import sightfinder.util.TermDocumentPair;
 
 @Service
@@ -24,9 +25,99 @@ public class IRService {
 	
 //	public static Integer MAX_CLUSTER_SIZE = 10;
 	
-	@Autowired
-	private TermsPipeline termsPipeline;
+	public static int MAX_SUMMARY_SENTENCES_COUNT = 10;
 	
+	private TermsPipeline termsPipeline = new TermsPipeline();
+	private SplitToSentencePipeline splitToSentencePipeline = new SplitToSentencePipeline();
+	
+	public String summarize(Set<String> documents) throws Exception {
+		ArrayList<String> documentsList = new ArrayList<String>();
+		for (String document: documents) {
+			documentsList.add(repair(document));
+		}
+		List<String> originalSentences = splitToSentencePipeline.splitToSentences(documentsList);
+
+		Map<Long, String> documentsByID = new HashMap<Long, String>();
+		for (int i = 0; i < originalSentences.size(); i++) {
+			documentsByID.put((long) i, originalSentences.get(i));
+		}
+		
+		Map<String, Long> histogram = new HashMap<String, Long>();
+		Map<Long, List<String>> sentencesByWords = termsPipeline.tokenizeAndStem(documentsByID);
+		List<Sentence> sentences = new ArrayList<Sentence>();
+		int wordsCount = 0;
+		for (Entry<Long, List<String>> entry: sentencesByWords.entrySet()) {
+			Sentence sentence = new Sentence();
+			sentence.setOriginalText(originalSentences.get(entry.getKey().intValue()));
+			sentence.setWords(entry.getValue());
+			for (String word: entry.getValue()) {
+				if (histogram.containsKey(word)) {
+					histogram.put(word, histogram.get(word) + 1);
+				} else {
+					histogram.put(word, (long) 1);
+				}
+			}
+			sentences.add(sentence);
+			wordsCount += entry.getValue().size();
+		}
+		Map<String, Double> distribution = new HashMap<String, Double>();
+		for (Entry<String, Long> wordCount: histogram.entrySet()) {
+			distribution.put(wordCount.getKey(), wordCount.getValue() * 1.0 / wordsCount);
+		}
+		StringBuilder summary = new StringBuilder("");
+		for (int i = 0; i < MAX_SUMMARY_SENTENCES_COUNT; i++) {
+			calculateScore(sentences, distribution);
+			String word = mostLikelyWord(distribution);
+			Sentence sentence = highestSentence(sentences, word);
+			summary.append(sentence.getOriginalText());
+			Double wordLikelyhood = distribution.get(word);
+			distribution.put(word, wordLikelyhood * wordLikelyhood);
+			sentences.remove(sentence);
+		}
+		
+		return summary.toString();
+	}
+
+	private String repair(String document) {
+		return document.replaceAll("(Св.) |(св.) |с. |гр. ", "$1").replaceAll("(г.) ([A-Z])", "$1 $2");
+	}
+
+	private void calculateScore(List<Sentence> sentences,
+			Map<String, Double> distribution) {
+		for (Sentence sentence: sentences) {
+			double score = 1;
+			for (String word: sentence.getWords()) {
+				score *= distribution.get(word);
+			}
+			sentence.setScore(score);
+		}
+	}
+	
+	private Sentence highestSentence(List<Sentence> sentences, String word) {
+		Sentence maxScoredSentence = null;
+		double maxScore = -1;
+		for (Sentence sentence: sentences) {
+			if (sentence.getWords().contains(word) && sentence.getScore() > maxScore) {
+				maxScore = sentence.getScore();
+				maxScoredSentence =sentence;
+			}
+		}
+		return maxScoredSentence;
+	}
+
+	private String mostLikelyWord(Map<String, Double> distribution) {
+		String word = null;
+		double maxProbability = -1;
+		for (Entry<String, Double> entry: distribution.entrySet()) {
+			if (entry.getValue() > maxProbability) {
+				word = entry.getKey();
+				maxProbability = entry.getValue();
+			}
+		}
+				
+		return word;
+	}
+
 	public List<MergedLandmark> clusterDocuments(Iterable<Landmark> landmarks) throws Exception {
 		List<Cluster> clusters = new ArrayList<Cluster>();
 		List<List<Double>> similaritiesMatrix = new ArrayList<List<Double>>();
