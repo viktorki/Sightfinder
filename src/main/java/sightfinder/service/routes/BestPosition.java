@@ -1,4 +1,4 @@
-package sightfinder.service.location;
+package sightfinder.service.routes;
 
 import sightfinder.model.Landmark;
 

@@ -65,7 +65,7 @@ public class LocationsPipeline {
         return pipeline;
     }
 
-    public Map<String, List<Landmark>> listAnnotations() throws GateException, IOException {
+    public Map<String, Set<Landmark>> listAnnotations() throws GateException, IOException {
 
         Gate.init();
 
@@ -74,7 +74,7 @@ public class LocationsPipeline {
         LocationsPipeline pipeline = getPipelineWithCorpus();
         pipeline.execute();
 
-        Map<String, List<Landmark>> locationToLandmarks = new HashMap<>();
+        Map<String, Set<Landmark>> locationToLandmarks = new HashMap<>();
         Corpus annotatedCorpus =  pipeline.corpusController.getCorpus();
 
         for (int i = 0; i < annotatedCorpus.size(); i++) {
@@ -87,7 +87,7 @@ public class LocationsPipeline {
                             getContent(startOffset, endOffset).toString();
 
                     if (!locationToLandmarks.containsKey(locationToken)) {
-                        locationToLandmarks.put(locationToken, new ArrayList<>());
+                        locationToLandmarks.put(locationToken, new HashSet<>());
                     }
 
                     locationToLandmarks.get(locationToken).add(landmarks.get(i));
