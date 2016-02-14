@@ -1,5 +1,6 @@
 package sightfinder.model;
 
+import com.google.common.base.Joiner;
 import sightfinder.util.Source;
 
 import java.math.BigDecimal;
@@ -132,10 +133,13 @@ public class MergedLandmark {
         MergedLandmark mergedLandmark = new MergedLandmark();
 
         mergedLandmark.getIds().add(regularLandmark.getId());
-        mergedLandmark.getLandmarkTypes().add(regularLandmark.getLandmarkType());
         mergedLandmark.getDescriptions().add(regularLandmark.getDescription());
         mergedLandmark.getNames().add(regularLandmark.getName());
         mergedLandmark.getSources().add(regularLandmark.getSource());
+
+
+        if (regularLandmark.getLandmarkType() != null)
+            mergedLandmark.getLandmarkTypes().add(regularLandmark.getLandmarkType());
 
         // TODO: maybe check for different values as well?
         if (regularLandmark.getLongitude() != null)
@@ -171,5 +175,22 @@ public class MergedLandmark {
 
     public Long getGroupId() {
         return ids.iterator().next();
+    }
+
+    public Landmark toLandmark() {
+        Landmark landmark = new Landmark();
+
+        landmark.setId(ids.iterator().next());
+        landmark.setLandmarkType(landmarkTypes.iterator().next());
+        landmark.setDescription(Joiner.on(". ").join(descriptions));
+        landmark.setName(names.iterator().next());
+
+        landmark.setLatitude(latitude);
+        landmark.setLongitude(longitude);
+        landmark.setWorkingTimeFrom(workingTimeFrom);
+        landmark.setWorkingTimeTo(workingTimeTo);
+        landmark.setTicketPrice(ticketPrice);
+
+        return landmark;
     }
 }
