@@ -2,6 +2,7 @@ package sightfinder.service.routes;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import com.sun.org.apache.bcel.internal.generic.LAND;
 import gate.util.GateException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import sightfinder.exception.LandmarkException;
 import sightfinder.gate.LocationsPipeline;
 import sightfinder.model.Landmark;
+import sightfinder.service.LandmarkService;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,6 +31,9 @@ public class RoutesService {
     @Autowired
     private LocationsPipeline pipeline;
 
+    @Autowired
+    private LandmarkService landmarkService;
+
     public Map<String, List<Landmark>> getShortestRoutes() throws LandmarkException {
         Map<String, List<Landmark>> locationsToRoutes = new HashMap<>();
 
@@ -40,31 +45,40 @@ public class RoutesService {
     }
 
     public List<Landmark> getShortestRoute(String location) throws LandmarkException {
-        Set<Landmark> landmarksInLocation = locationsToLandmarks.get(location);
-        if (landmarksInLocation == null) {
-            throw new LandmarkException(String.format("Location with name %s not found", location));
-        }
-
-        landmarksInLocation = landmarksInLocation.stream().filter(landmark ->
-                landmark.getLatitude() != null && landmark.getLongitude() != null).collect(Collectors.toSet());
-
-        if (landmarksInLocation.isEmpty()) {
-            throw new LandmarkException(String.format(
-                    "No landmarks with coordinates fount for location with name %s", location));
-        }
-
+        Set<Landmark> landmarksInLocation = getLandmarksInLocation(location);
         return getShortestRoute(landmarksInLocation.iterator().next(), landmarksInLocation);
     }
 
+    public List<Landmark> getShortestRouteFrom(String location, Landmark startLandmark) throws LandmarkException {
+        return getShortestRoute(startLandmark, getLandmarksInLocation(location));
+    }
+
+    public List<List<Landmark>> getShortestRoutesFrom(Long landmarkId) throws GateException, IOException, LandmarkException {
+        Landmark startLandmark = landmarkService.findLandmarkById(landmarkId);
+        if (startLandmark.getLongitude() == null || startLandmark.getLatitude() == null) {
+            throw new LandmarkException(String.format("No coordinates for landmark with id %s found", landmarkId));
+        }
+        List<String> locations = pipeline.getLocationsForLandmark(startLandmark);
+
+        List<List<Landmark>> routes = new ArrayList<>();
+
+        for (String location: locations) {
+            routes.add(getShortestRouteFrom(location, startLandmark));
+        }
+
+        return routes;
+    }
 
 
-    //    C({1},1) = 0
-//    for s = 2 to n:
-//       for all subsets S ⊆ {1,2,...,n} of size s and containing 1:
-//           C(S,1) = ∞∞
-//           for all j∈S,j≠1:
-//               C(S, j) = min{C(S−{j},i)+dij:i∈S,i≠j}
-//    return minjC({1,...,n},j)+dj1
+    /*
+    C({1},1) = 0
+    for s = 2 to n:
+       for all subsets S ⊆ {1,2,...,n} of size s and containing 1:
+           C(S,1) = ∞∞
+           for all j∈S,j≠1:
+               C(S, j) = min{C(S−{j},i)+dij:i∈S,i≠j}
+    return minjC({1,...,n},j)+dj1
+    */
     private List<Landmark> getShortestRoute(Landmark start, Set<Landmark> landmarkGroup) {
         System.out.println("Starting from:");
         System.out.println(start.getName());
@@ -96,9 +110,8 @@ public class RoutesService {
                 routesToLength.put(new VisitedLandmarks(subset, start), new BestPosition(Double.MAX_VALUE, start));
 
                 subset.stream().forEach(landmark -> {
-                    System.out.println("For landmark: " + landmark.getName());
-
                     if (!landmark.equals(start)) {
+                        System.out.println("For landmark: " + landmark.getName());
                         Set<Landmark> subsetWithoutLandmark = new HashSet<>(subset);
                         subsetWithoutLandmark.remove(landmark);
 
@@ -111,8 +124,12 @@ public class RoutesService {
                             Landmark visitedLandmark = setIterator.next();
                             System.out.println("Visited landmark: " + visitedLandmark.getName());
                             VisitedLandmarks visitedLandmarks = new VisitedLandmarks(subsetWithoutLandmark, visitedLandmark);
+
+                            System.out.println("Memorized length: " + routesToLength.get(visitedLandmarks).getLength());
+                            System.out.println("new Distance: " + distanceInKilometers(landmark, visitedLandmark));
                             Double length = distanceInKilometers(landmark, visitedLandmark) +
                                     routesToLength.get(visitedLandmarks).getLength();
+                            System.out.println("Distance form the beginning: " + length);
 
                             if (length < minLength) {
                                 minLength = length;
@@ -126,33 +143,64 @@ public class RoutesService {
 
                 });
             }
-
-
         }
 
-        return constructRoute(landmarkGroup, start);
+        System.out.println("Distances count: " + routesToLength.size());
+
+        Landmark end = findBestEnd(start, landmarkGroup);
+        return constructRoute(start, end, landmarkGroup);
     }
 
 
-    private List<Landmark> constructRoute(Set<Landmark> landmarks, Landmark end) {
+    private Landmark findBestEnd(Landmark start, Set<Landmark> landmarks) {
+        if (landmarks.size() == 1) {
+            return start;
+        }
+
+        Iterator<Landmark> iterator = landmarks.iterator();
+        double minLength = Double.MAX_VALUE;
+        Landmark optimalEndLandmark = null;
+
+        while(iterator.hasNext()) {
+            Landmark landmark = iterator.next();
+            if (!landmark.equals(start)) {
+                double length = routesToLength.get(new VisitedLandmarks(landmarks, landmark)).getLength();
+                length += distanceInKilometers(landmark, start);
+
+                if (length < minLength) {
+                    minLength = length;
+                    optimalEndLandmark = landmark;
+                }
+            }
+        }
+
+        return optimalEndLandmark;
+    }
+
+
+    private List<Landmark> constructRoute(Landmark start, Landmark end, Set<Landmark> landmarks) {
         List<Landmark> reversedRoute = new ArrayList<>();
+        reversedRoute.add(start);
+        System.out.println("Adding: " + start.getName());
         reversedRoute.add(end);
+        System.out.println("Adding: " + end.getName());
 
         while (!landmarks.isEmpty()) {
             BestPosition bestPosition = routesToLength.get(new VisitedLandmarks(landmarks, end));
 
             Landmark previousLandmark = bestPosition.getComesFrom();
             reversedRoute.add(previousLandmark);
+            System.out.println("Adding: " + previousLandmark.getName());
 
             if (reversedRoute.get(0).equals(previousLandmark)) {
                 return reversedRoute;
             }
 
-            landmarks.remove(previousLandmark);
+            landmarks.remove(end);
             end = previousLandmark;
         }
 
-        return reversedRoute;
+        return Lists.reverse(reversedRoute);
     }
 
     /*
@@ -198,6 +246,23 @@ public class RoutesService {
             sets.add(set);
         }
         return sets;
+    }
+
+    private Set<Landmark> getLandmarksInLocation(String location) throws LandmarkException {
+        Set<Landmark> landmarksInLocation = locationsToLandmarks.get(location);
+        if (landmarksInLocation == null) {
+            throw new LandmarkException(String.format("Location with name %s not found", location));
+        }
+
+        landmarksInLocation = landmarksInLocation.stream().filter(landmark ->
+                landmark.getLatitude() != null && landmark.getLongitude() != null).collect(Collectors.toSet());
+
+        if (landmarksInLocation.isEmpty()) {
+            throw new LandmarkException(String.format(
+                    "No landmarks with coordinates fount for location with name %s", location));
+        }
+
+        return landmarksInLocation;
     }
 
     private Map<String, Set<Landmark>> getLocationsToLandmarks() {

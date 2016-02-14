@@ -33,4 +33,13 @@ public class RoutesController {
     public List<Landmark> getRouteForLocations(@PathVariable String location) throws LandmarkException {
         return routesService.getShortestRoute(location);
     }
+
+    @RequestMapping(value="/landmark/{id:.*}", method = RequestMethod.GET)
+    public List<List<Landmark>> getRoutesForLocations(@PathVariable String id) throws GateException, IOException,
+            LandmarkException {
+        return routesService.getShortestRoutesFrom(Long.valueOf(id));
+    }
+
+
+
 }

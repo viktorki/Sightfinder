@@ -181,7 +181,8 @@ public class MergedLandmark {
         Landmark landmark = new Landmark();
 
         landmark.setId(ids.iterator().next());
-        landmark.setLandmarkType(landmarkTypes.iterator().next());
+        if (landmarkTypes.size() > 0)
+            landmark.setLandmarkType(landmarkTypes.iterator().next());
         landmark.setDescription(Joiner.on(". ").join(descriptions));
         landmark.setName(names.iterator().next());
 

@@ -1,20 +1,21 @@
 package sightfinder.gate;
 
-import com.google.common.collect.Lists;
 import gate.*;
 import gate.util.GateException;
 import gate.util.Out;
 import gate.util.persistence.PersistenceManager;
 import sightfinder.model.Landmark;
-import sightfinder.service.LandmarkService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import sightfinder.service.DBPediaService;
+import sightfinder.service.LocationService;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by krasimira on 11.02.16.
@@ -26,16 +27,18 @@ public class LocationsPipeline {
     private CorpusController corpusController;
 
     @Autowired
-    private LandmarkService landmarkService;
+    private LocationService locationService;
+
+    @Autowired
+    private DBPediaService dbPediaService;
 
     private List<Landmark> landmarks;
 
-    public void initAnnie() throws GateException, IOException {
+    public void initPipeline() throws GateException, IOException {
         File pipelineFile = getPipelineGappFile();
         corpusController =
                 (CorpusController) PersistenceManager.loadObjectFromFile(pipelineFile);
     }
-
 
     public void setCorpus(Corpus corpus) {
         corpusController.setCorpus(corpus);
@@ -47,7 +50,7 @@ public class LocationsPipeline {
         Out.prln("...pipeline complete");
     }
 
-    public Corpus getLandmarksCorpus() throws GateException {
+    public Corpus getFullCorpus() throws GateException {
         Corpus corpus = Factory.newCorpus("Landmarks corpus");
         for (Landmark landmark : landmarks) {
             Document landmarkDocument = Factory.newDocument(landmark.getDescription());
@@ -57,11 +60,16 @@ public class LocationsPipeline {
         return corpus;
     }
 
-    public LocationsPipeline getPipelineWithCorpus() throws GateException, IOException {
-        LocationsPipeline pipeline = new LocationsPipeline();
-        pipeline.initAnnie();
-        pipeline.setCorpus(getLandmarksCorpus());
+    public Corpus getCorpusForLandmark(Landmark landmark) throws GateException {
+        Corpus corpus = Factory.newCorpus("Landmark " + landmark.getId() + " corpus");
+        corpus.add(Factory.newDocument(landmark.getDescription()));
 
+        return corpus;
+    }
+
+    public LocationsPipeline getPipeline() throws GateException, IOException {
+        LocationsPipeline pipeline = new LocationsPipeline();
+        pipeline.initPipeline();
         return pipeline;
     }
 
@@ -69,9 +77,13 @@ public class LocationsPipeline {
 
         Gate.init();
 
-        landmarks = Lists.newArrayList(landmarkService.getLandmarks());
+        landmarks = locationService.getUniqueLandmarksByLocation(dbPediaService.getUniqueLandmarks())
+                .stream()
+                .map(mergedLandmark -> mergedLandmark.toLandmark())
+                .collect(Collectors.toList());
 
-        LocationsPipeline pipeline = getPipelineWithCorpus();
+        LocationsPipeline pipeline = getPipeline();
+        pipeline.setCorpus(getFullCorpus());
         pipeline.execute();
 
         Map<String, Set<Landmark>> locationToLandmarks = new HashMap<>();
@@ -81,11 +93,7 @@ public class LocationsPipeline {
             Document landmarkDocument = annotatedCorpus.get(i);
             for (Annotation annotation : landmarkDocument.getAnnotations()) {
                 if (annotation.getType().equals(LOOKUP_ANNOTATION)) {
-                    long startOffset = annotation.getStartNode().getOffset();
-                    long endOffset = annotation.getEndNode().getOffset();
-                    String locationToken = landmarkDocument.getContent().
-                            getContent(startOffset, endOffset).toString();
-
+                    String locationToken = extractTokenFromAnnotation(landmarkDocument, annotation);
                     if (!locationToLandmarks.containsKey(locationToken)) {
                         locationToLandmarks.put(locationToken, new HashSet<>());
                     }
@@ -96,6 +104,32 @@ public class LocationsPipeline {
         }
 
         return locationToLandmarks;
+    }
+
+    public List<String> getLocationsForLandmark(Landmark landmark) throws GateException, IOException {
+        LocationsPipeline pipeline = getPipeline();
+        pipeline.setCorpus(getCorpusForLandmark(landmark));
+        pipeline.execute();
+
+        Corpus annotatedCorpus =  pipeline.corpusController.getCorpus();
+        Document landmarkDocument = annotatedCorpus.get(0);
+        List<String> locations = new ArrayList<>();
+
+        for (Annotation annotation : landmarkDocument.getAnnotations()) {
+            if (annotation.getType().equals(LOOKUP_ANNOTATION)) {
+                String locationToken = extractTokenFromAnnotation(landmarkDocument, annotation);
+                locations.add(locationToken);
+            }
+        }
+
+        return locations;
+    }
+
+    private String extractTokenFromAnnotation(Document landmarkDocument, Annotation annotation) throws GateException {
+        long startOffset = annotation.getStartNode().getOffset();
+        long endOffset = annotation.getEndNode().getOffset();
+        return landmarkDocument.getContent().
+                getContent(startOffset, endOffset).toString();
     }
 
     private static File getPipelineGappFile() {
