@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import sightfinder.service.DBPediaService;
 import sightfinder.service.LocationService;
 
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -76,12 +77,6 @@ public class LocationsPipeline {
     public Map<String, Set<Landmark>> listAnnotations() throws GateException, IOException {
 
         Gate.init();
-
-        landmarks = locationService.getUniqueLandmarksByLocation(dbPediaService.getUniqueLandmarks())
-                .stream()
-                .map(mergedLandmark -> mergedLandmark.toLandmark())
-                .collect(Collectors.toList());
-
         LocationsPipeline pipeline = getPipeline();
         pipeline.setCorpus(getFullCorpus());
         pipeline.execute();
@@ -143,5 +138,13 @@ public class LocationsPipeline {
         }
 
         return pipelineFile;
+    }
+
+    @PostConstruct
+    private void init() {
+        landmarks = locationService.getUniqueLandmarksByLocation(dbPediaService.getUniqueLandmarks())
+                .stream()
+                .map(mergedLandmark -> mergedLandmark.toLandmark())
+                .collect(Collectors.toList());
     }
 }
