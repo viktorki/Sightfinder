@@ -24,21 +24,19 @@ import sightfinder.model.Landmark;
 @RequestMapping("/annotations")
 public class AnnotationsController {
 
-    @Autowired
-    private LocationsPipeline pipeline;
+	@Autowired
+	private LocationsPipeline pipeline;
 
-    @Autowired
-    private RelationInstanceService relationInstanceService;
+	@Autowired
+	private RelationInstanceService relationInstanceService;
 
-    @RequestMapping(method = RequestMethod.GET)
-    public Map<String, Set<Landmark>> getAllLandmarkTypes()
-	    throws GateException, IOException {
-	return pipeline.listAnnotations();
-    }
+	@RequestMapping(method = RequestMethod.GET)
+	public Map<String, Set<Landmark>> getAllLandmarkTypes() throws GateException, IOException {
+		return pipeline.listAnnotations();
+	}
 
-    @RequestMapping("/relations")
-    public List<Annotation> getRelationAnnotations() throws GateException,
-	    IOException {
-	return relationInstanceService.listAnnotations();
-    }
+	@RequestMapping("/relations")
+	public List<Annotation> getRelationAnnotations() throws GateException, IOException {
+		return relationInstanceService.makeRelations();
+	}
 }

@@ -3,7 +3,6 @@
   <groupId>Sightfinder</groupId>
   <artifactId>Sightfinder</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <packaging>war</packaging>
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
     <plugins>
@@ -72,7 +71,6 @@
     <dependency>
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
-      <version>2.1</version>
     </dependency>
   </dependencies>
 </project>

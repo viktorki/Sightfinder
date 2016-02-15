@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,6 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -61,6 +63,9 @@ public class Landmark implements Serializable {
 
 	@Column(name = "source")
 	private Source source;
+
+	@OneToMany(mappedBy = "fromLandmark")
+	private List<Relation> relations;
 
 	@Transient
 	private Double distance;
@@ -145,6 +150,14 @@ public class Landmark implements Serializable {
 		this.source = source;
 	}
 
+	public List<Relation> getRelations() {
+		return relations;
+	}
+
+	public void setRelations(List<Relation> relations) {
+		this.relations = relations;
+	}
+
 	public Double getDistance() {
 		return distance;
 	}
@@ -152,8 +165,6 @@ public class Landmark implements Serializable {
 	public void setDistance(Double distance) {
 		this.distance = distance;
 	}
-
-
 
 	public static Comparator<Landmark> LandmarkDistanceComparator = new Comparator<Landmark>() {
 		public int compare(Landmark landmark1, Landmark landmark2) {
