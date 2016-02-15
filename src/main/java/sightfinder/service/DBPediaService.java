@@ -183,7 +183,7 @@ public class DBPediaService {
 
     private static File getDBPediaResourcesFile() {
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        URL resourseURL = classloader.getResource("dbpedia/dbpedia-resources");
+        URL resourseURL = classloader.getResource("duplication/dbpedia/dbpedia-resources");
         File dbpediaResourcesFile = null;
         try {
             dbpediaResourcesFile = new File(resourseURL.toURI());

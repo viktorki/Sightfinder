@@ -1,5 +1,6 @@
 package sightfinder.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Joiner;
 import sightfinder.util.Source;
 
@@ -173,6 +174,7 @@ public class MergedLandmark {
         return false;
     }
 
+    @JsonIgnore
     public Long getGroupId() {
         return ids.iterator().next();
     }
