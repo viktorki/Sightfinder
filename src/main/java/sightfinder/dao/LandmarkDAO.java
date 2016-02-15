@@ -7,10 +7,12 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import sightfinder.model.Landmark;
+import sightfinder.model.LandmarkType;
 import sightfinder.util.Source;
 
 public interface LandmarkDAO extends CrudRepository<Landmark, Long> {
 	Iterable<Landmark> findBySource(Source source);
+	Iterable<Landmark> findByLandmarkType(LandmarkType landmarkType);
 
 	@Query("select l from Landmark l where latitude between :minLatitude and :maxLatitude and longitude between :minLongitude and :maxLongitude")
 	public List<Landmark> findByCoordinateRange(@Param("minLatitude") Double minLatitude,

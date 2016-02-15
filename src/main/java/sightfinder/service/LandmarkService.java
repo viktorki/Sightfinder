@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import sightfinder.dao.LandmarkDAO;
 import sightfinder.model.Landmark;
+import sightfinder.model.LandmarkType;
 import sightfinder.util.Constants;
 import sightfinder.util.Source;
 
@@ -23,6 +24,8 @@ public class LandmarkService {
 		return landmarkDAO.save(landmark);
 	}
 
+	public Iterable<Landmark> saveLandmarks(List<Landmark> landmarks) { return landmarkDAO.save(landmarks); }
+
 	public Iterable<Landmark> getLandmarks() {
 		return landmarkDAO.findAll();
 	}
@@ -34,6 +37,8 @@ public class LandmarkService {
 	public Iterable<Landmark> findLandmarksBySource(Source source) {
 		return landmarkDAO.findBySource(source);
 	}
+
+	public Iterable<Landmark> getLandmarksWithType(LandmarkType type) { return landmarkDAO.findByLandmarkType(type); }
 
 	public List<Landmark> findNearestLandmarks(Double latitude, Double longitude, Long maxDistance) {
 		Double difference = 180 * maxDistance / (Math.PI * Constants.RADIUS_OF_EARTH);

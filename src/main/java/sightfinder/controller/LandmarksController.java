@@ -9,11 +9,7 @@ import java.util.stream.StreamSupport;
 
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import sightfinder.model.Landmark;
 import sightfinder.model.LandmarkType;
@@ -47,13 +43,16 @@ public class LandmarksController {
 	LandmarkTypeService landmarkTypeService;
 
 	@RequestMapping(method = RequestMethod.GET)
-	public Iterable<Landmark> getAllLandmarks() {
-		return landmarkService.getLandmarks();
+	public Iterable<Landmark> getLandmarks(@RequestParam(required = false) Long typeId) {
+        if (typeId == null) {
+            return landmarkService.getLandmarks();
+        }
+        return landmarkService.getLandmarksWithType(landmarkTypeService.findLandmarkTypeById(typeId));
 	}
 
-	@RequestMapping(value = "/types", method = RequestMethod.GET)
-	public Iterable<LandmarkType> getAllLandmarkTypes() {
-		return landmarkTypeService.getLandmarkTypes();
+	@RequestMapping(method = RequestMethod.POST)
+	public Iterable<Landmark> saveAllLandmarks(@RequestBody List<Landmark> landmarks) {
+		return landmarkService.saveLandmarks(landmarks);
 	}
 
 	@RequestMapping(value = "/working-time", method = RequestMethod.POST)
