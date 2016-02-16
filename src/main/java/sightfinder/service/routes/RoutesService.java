@@ -2,6 +2,8 @@ package sightfinder.service.routes;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.sun.org.apache.bcel.internal.generic.LAND;
 import gate.util.GateException;
@@ -11,6 +13,7 @@ import sightfinder.exception.LandmarkException;
 import sightfinder.gate.LocationsPipeline;
 import sightfinder.model.Landmark;
 import sightfinder.service.LandmarkService;
+import sightfinder.util.ResourseFilesUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,6 +30,8 @@ public class RoutesService {
 
     private Map<VisitedLandmarks, BestPosition> routesToLength = new HashMap<>();
     private Map<String, Set<Landmark>> locationsToLandmarks = getLocationsToLandmarks();
+
+    private static final int MAX_LOCATION_SIZE = 10;
 
     @Autowired
     private LocationsPipeline pipeline;
@@ -45,12 +50,12 @@ public class RoutesService {
     }
 
     public List<Landmark> getShortestRoute(String location) throws LandmarkException {
-        Set<Landmark> landmarksInLocation = getLandmarksInLocation(location);
+        Set<Landmark> landmarksInLocation = getLandmarksInLocation(location, null);
         return getShortestRoute(landmarksInLocation.iterator().next(), landmarksInLocation);
     }
 
     public List<Landmark> getShortestRouteFrom(String location, Landmark startLandmark) throws LandmarkException {
-        return getShortestRoute(startLandmark, getLandmarksInLocation(location));
+        return getShortestRoute(startLandmark, getLandmarksInLocation(location, startLandmark));
     }
 
     public List<List<Landmark>> getShortestRoutesFrom(Long landmarkId) throws GateException, IOException, LandmarkException {
@@ -59,6 +64,8 @@ public class RoutesService {
             throw new LandmarkException(String.format("No coordinates for landmark with id %s found", landmarkId));
         }
         List<String> locations = pipeline.getLocationsForLandmark(startLandmark);
+
+
 
         List<List<Landmark>> routes = new ArrayList<>();
 
@@ -69,16 +76,6 @@ public class RoutesService {
         return routes;
     }
 
-
-    /*
-    C({1},1) = 0
-    for s = 2 to n:
-       for all subsets S ⊆ {1,2,...,n} of size s and containing 1:
-           C(S,1) = ∞∞
-           for all j∈S,j≠1:
-               C(S, j) = min{C(S−{j},i)+dij:i∈S,i≠j}
-    return minjC({1,...,n},j)+dj1
-    */
     private List<Landmark> getShortestRoute(Landmark start, Set<Landmark> landmarkGroup) {
         System.out.println("Starting from:");
         System.out.println(start.getName());
@@ -89,9 +86,6 @@ public class RoutesService {
 
         Set<Set<Landmark>> landmarksPowerSet = powerSet(landmarkGroup);
         landmarksPowerSet.stream().forEach(set -> set.add(start));
-
-        System.out.println("Power set size: " + landmarksPowerSet.size());
-
         landmarkGroup.add(start);
 
         Set<Landmark> startElementSet = landmarksPowerSet.stream().filter(set -> set.size() == 1).collect(Collectors.toList()).get(0);
@@ -103,9 +97,6 @@ public class RoutesService {
 
             Set<Set<Landmark>> setsWithSize = landmarksPowerSet.stream().
                     filter(set -> set.size() == finalSize).collect(Collectors.toSet());
-
-            System.out.println("Filtered Power set size: " + setsWithSize.size());
-
             for (Set<Landmark> subset: setsWithSize) {
                 routesToLength.put(new VisitedLandmarks(subset, start), new BestPosition(Double.MAX_VALUE, start));
 
@@ -144,9 +135,6 @@ public class RoutesService {
                 });
             }
         }
-
-        System.out.println("Distances count: " + routesToLength.size());
-
         Landmark end = findBestEnd(start, landmarkGroup);
         return constructRoute(start, end, landmarkGroup);
     }
@@ -165,7 +153,7 @@ public class RoutesService {
             Landmark landmark = iterator.next();
             if (!landmark.equals(start)) {
                 double length = routesToLength.get(new VisitedLandmarks(landmarks, landmark)).getLength();
-                length += distanceInKilometers(landmark, start);
+                //length += distanceInKilometers(landmark, start);
 
                 if (length < minLength) {
                     minLength = length;
@@ -189,12 +177,12 @@ public class RoutesService {
             BestPosition bestPosition = routesToLength.get(new VisitedLandmarks(landmarks, end));
 
             Landmark previousLandmark = bestPosition.getComesFrom();
-            reversedRoute.add(previousLandmark);
-            System.out.println("Adding: " + previousLandmark.getName());
-
             if (reversedRoute.get(0).equals(previousLandmark)) {
                 return reversedRoute;
             }
+
+            reversedRoute.add(previousLandmark);
+            System.out.println("Adding: " + previousLandmark.getName());
 
             landmarks.remove(end);
             end = previousLandmark;
@@ -248,7 +236,7 @@ public class RoutesService {
         return sets;
     }
 
-    private Set<Landmark> getLandmarksInLocation(String location) throws LandmarkException {
+    private Set<Landmark> getLandmarksInLocation(String location, Landmark startLandmark) throws LandmarkException {
         Set<Landmark> landmarksInLocation = locationsToLandmarks.get(location);
         if (landmarksInLocation == null) {
             throw new LandmarkException(String.format("Location with name %s not found", location));
@@ -262,12 +250,19 @@ public class RoutesService {
                     "No landmarks with coordinates fount for location with name %s", location));
         }
 
+        if (landmarksInLocation.size() > MAX_LOCATION_SIZE) {
+            landmarksInLocation = new HashSet<>(getMostPopular(landmarksInLocation));
+            if (startLandmark != null) {
+                landmarksInLocation.add(startLandmark);
+            }
+        }
+
         return landmarksInLocation;
     }
 
     private Map<String, Set<Landmark>> getLocationsToLandmarks() {
         Map<String, Set<Landmark>> locationsToLandmarks = new HashMap<>();
-        File groupByLocationResoursesFile = getGroupByLocationResoursesFile();
+        File groupByLocationResoursesFile = ResourseFilesUtil.getFileFromResources("calculated/group-by-location-new");
 
         try {
             if (groupByLocationResoursesFile == null) {
@@ -286,26 +281,14 @@ public class RoutesService {
         return locationsToLandmarks;
     }
 
-    private static File getGroupByLocationResoursesFile() {
-        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        URL resourseURL = classloader.getResource("gate/group-by-location");
-        File locationResoursesFile = null;
-        try {
-            locationResoursesFile = new File(resourseURL.toURI());
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
+    private static Set<Landmark> getMostPopular(Set<Landmark> landmarksInLocation) {
+        List<Landmark> landmarks = new ArrayList<>(landmarksInLocation);
+        Collections.sort(landmarks, (l1, l2) ->
+                Integer.compare(l1.getPopularity(), l2.getPopularity())
+        );
 
-        return locationResoursesFile;
-    }
-
-    public static void main(String[] args) {
-
-//        RoutesService routesService = new RoutesService();
-//
-//
-//
-//        routesService.getShortestRoute("Канина");
+        Set<Landmark> subset = new HashSet<>(landmarks.subList(0, MAX_LOCATION_SIZE));
+        return subset;
     }
 
 }

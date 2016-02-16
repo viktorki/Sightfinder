@@ -1,0 +1,38 @@
+Phase: Closeness  
+Input: Lookup Token
+Options: control = appelt debug = true
+
+Macro: CLOSENESS
+(
+{Token.string == "близо"} |
+{Token.string == "близост"} |
+{Token.string == "в"} |
+{Token.string == "във"}
+)
+
+Rule: Closeness  
+(  
+ (CLOSENESS)
+ ({Token}) [0,4]
+ ({Lookup.majorType == location}) :location 
+)  
+:closeness
+--> 
+// :closeness.Closeness = {rule = "Closeness"}
+
+{
+	try {
+		AnnotationSet matchCloseness = bindings.get("closeness");
+		AnnotationSet location = bindings.get("location");
+		
+		FeatureMap fm  = new SimpleFeatureMapImpl();
+        fm.put("rule", "Closeness");
+        String locationName = gate.Utils.stringFor(doc, location.iterator().next());
+        fm.put("location", locationName);
+        outputAS.add(matchCloseness.firstNode().getOffset(), matchCloseness.lastNode().getOffset(), "Closeness", fm);
+		
+	} catch (GateException e) {
+		e.printStackTrace();
+	}
+
+}

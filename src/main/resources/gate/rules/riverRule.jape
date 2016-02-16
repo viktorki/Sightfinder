@@ -1,0 +1,15 @@
+Phase: River  
+Input: Lookup Token
+Options: control = appelt debug = true  
+ 
+Rule: River  
+(  
+ ({Token.string == "р"}
+  {Token.string == "."} | 
+  {Token.string == "река"}
+  )
+ {Lookup.majorType == location}    
+)  
+:location
+-->  
+ :location.River = {rule = "River"}

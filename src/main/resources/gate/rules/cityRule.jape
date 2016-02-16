@@ -1,0 +1,15 @@
+Phase: City  
+Input: Lookup Token
+Options: control = appelt debug = true  
+ 
+Rule: City  
+(  
+ ({Token.string == "гр"}
+  {Token.string == "."} | 
+  {Token.string == "град"}
+  )
+ {Lookup.majorType == location}    
+)  
+:location
+-->  
+ :location.City = {rule = "City"}

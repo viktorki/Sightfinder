@@ -2,10 +2,7 @@ package sightfinder.controller;
 
 import gate.util.GateException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import sightfinder.exception.LandmarkException;
 import sightfinder.model.Landmark;
 import sightfinder.service.routes.RoutesService;
@@ -24,22 +21,23 @@ public class RoutesController {
     @Autowired
     private RoutesService routesService;
 
+    @CrossOrigin
     @RequestMapping(method = RequestMethod.GET)
     public Map<String, List<Landmark>> getRoutes() throws LandmarkException {
         return routesService.getShortestRoutes();
     }
 
+    @CrossOrigin
     @RequestMapping(value="/{location:.*}", method = RequestMethod.GET)
     public List<Landmark> getRouteForLocations(@PathVariable String location) throws LandmarkException {
         return routesService.getShortestRoute(location);
     }
 
+    @CrossOrigin
     @RequestMapping(value="/landmark/{id:.*}", method = RequestMethod.GET)
     public List<List<Landmark>> getRoutesForLocations(@PathVariable String id) throws GateException, IOException,
             LandmarkException {
         return routesService.getShortestRoutesFrom(Long.valueOf(id));
     }
-
-
 
 }

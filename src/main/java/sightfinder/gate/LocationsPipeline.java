@@ -1,7 +1,5 @@
 package sightfinder.gate;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import gate.*;
 import gate.util.GateException;
 import gate.util.Out;
@@ -9,19 +7,12 @@ import gate.util.persistence.PersistenceManager;
 import sightfinder.model.Landmark;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import sightfinder.model.MergedLandmark;
-import sightfinder.service.DBPediaService;
-import sightfinder.service.LocationService;
 import sightfinder.service.UniqueLandmarkService;
 import sightfinder.util.ResourseFilesUtil;
 
-import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Created by krasimira on 11.02.16.
@@ -29,7 +20,11 @@ import java.util.stream.Collectors;
 @Service
 public class LocationsPipeline {
 
-    private static String LOOKUP_ANNOTATION = "Lookup";
+    private static final String LOOKUP_ANNOTATION = "Lookup";
+    private static final String CLOSENESS_ANNOTATION = "Closeness";
+    private static final String LOCATION_FEATURE = "location";
+
+    private static final String CLOSENESS_PIPELINE = "gate/location-closeness.gapp";
     private CorpusController corpusController;
 
     @Autowired
@@ -38,7 +33,7 @@ public class LocationsPipeline {
     private List<Landmark> landmarks;
 
     public void initPipeline() throws GateException, IOException {
-        File pipelineFile = ResourseFilesUtil.getFileFromResources("gate/ling-pipe-pipeline-reduced.gapp");
+        File pipelineFile = ResourseFilesUtil.getFileFromResources(CLOSENESS_PIPELINE);
         corpusController =
                 (CorpusController) PersistenceManager.loadObjectFromFile(pipelineFile);
     }
@@ -79,6 +74,7 @@ public class LocationsPipeline {
     public Map<String, Set<Landmark>> listAnnotations() throws GateException, IOException {
 
         Gate.init();
+        landmarks = uniqueLandmarkService.getUniqueLandmarksMerged();
 
         LocationsPipeline pipeline = getPipeline();
         pipeline.setCorpus(getFullCorpus());
@@ -90,8 +86,8 @@ public class LocationsPipeline {
         for (int i = 0; i < annotatedCorpus.size(); i++) {
             Document landmarkDocument = annotatedCorpus.get(i);
             for (Annotation annotation : landmarkDocument.getAnnotations()) {
-                if (annotation.getType().equals(LOOKUP_ANNOTATION)) {
-                    String locationToken = extractTokenFromAnnotation(landmarkDocument, annotation);
+                if (annotation.getType().equals(CLOSENESS_ANNOTATION)) {
+                    String locationToken = (String)annotation.getFeatures().get(LOCATION_FEATURE);
                     if (!locationToLandmarks.containsKey(locationToken)) {
                         locationToLandmarks.put(locationToken, new HashSet<>());
                     }
@@ -114,8 +110,8 @@ public class LocationsPipeline {
         List<String> locations = new ArrayList<>();
 
         for (Annotation annotation : landmarkDocument.getAnnotations()) {
-            if (annotation.getType().equals(LOOKUP_ANNOTATION)) {
-                String locationToken = extractTokenFromAnnotation(landmarkDocument, annotation);
+            if (annotation.getType().equals(CLOSENESS_ANNOTATION)) {
+                String locationToken = (String)annotation.getFeatures().get(LOCATION_FEATURE);
                 locations.add(locationToken);
             }
         }

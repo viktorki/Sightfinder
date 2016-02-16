@@ -1,0 +1,34 @@
+Phase: Distance  
+Input: Lookup Token
+Options: control = appelt debug = true
+
+Rule: Distance  
+(  
+ ({Token.string =~ "(\\d)+"}) : kilometers
+ ({Token.string == "км"} | {Token.string == "м"})
+ ({Token}) [0,3]
+ ({Lookup.majorType == location}) : location    
+)  
+:distance
+-->
+{
+	try {
+		AnnotationSet kilometersNumber = bindings.get("kilometers");
+		AnnotationSet distance = bindings.get("distance");
+		AnnotationSet location = bindings.get("location");
+		Annotation kilometersValue = kilometersNumber.iterator().next();
+		String stringValue = gate.Utils.stringFor(doc, kilometersValue).replace(",", ".");
+		Double kilometesInDouble = Double.valueOf(stringValue);
+		
+		if (kilometesInDouble < 30) {
+			FeatureMap fm  = new SimpleFeatureMapImpl();
+	        fm.put("rule", "Closeness");
+	        String locationName = gate.Utils.stringFor(doc, location.iterator().next());
+	        fm.put("location", locationName);
+	        outputAS.add(distance.firstNode().getOffset(), distance.lastNode().getOffset(), "Closeness", fm);
+		} 
+	} catch (GateException e) {
+		e.printStackTrace();
+	}
+
+}
