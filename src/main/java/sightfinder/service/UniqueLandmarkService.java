@@ -40,7 +40,7 @@ public class UniqueLandmarkService {
 
     @PostConstruct
     private void init() throws IOException {
-        File uniqueLandmarksFile = ResourseFilesUtil.getFileFromResources("duplication/merged-duplication-approaches");
+        File uniqueLandmarksFile = ResourseFilesUtil.getFileFromResources("calculated/merged-duplication-approaches");
 
         if (uniqueLandmarksFile == null) {
             landmarks = getUniqueLandmarksOverall();

@@ -46,7 +46,7 @@ public class DBPediaService {
     public Map<Long, List<String>> getDBPediaResources() {
         Map<Long, List<String>> resourcesPerLandmark = new HashMap<>();
 
-        File dbPediaResourcesFile = ResourseFilesUtil.getFileFromResources("dbpedia/dbpedia-resources");
+        File dbPediaResourcesFile = ResourseFilesUtil.getFileFromResources("calculated/dbpedia-resources");
 
         try {
             if (dbPediaResourcesFile == null) {
@@ -184,7 +184,7 @@ public class DBPediaService {
         return dbpediaUrl;
     }
 
-    @PostConstruct
+    //@PostConstruct
     private void getIdsToLandmarks() {
         landmarks = new HashMap<>();
         for (Landmark landmark: landmarkService.getLandmarks()) {
