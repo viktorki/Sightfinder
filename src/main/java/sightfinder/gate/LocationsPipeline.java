@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import sightfinder.model.MergedLandmark;
 import sightfinder.service.DBPediaService;
 import sightfinder.service.LocationService;
+import sightfinder.service.UniqueLandmarkService;
+import sightfinder.util.ResourseFilesUtil;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
@@ -31,15 +33,12 @@ public class LocationsPipeline {
     private CorpusController corpusController;
 
     @Autowired
-    private LocationService locationService;
-
-    @Autowired
-    private DBPediaService dbPediaService;
+    private UniqueLandmarkService uniqueLandmarkService;
 
     private List<Landmark> landmarks;
 
     public void initPipeline() throws GateException, IOException {
-        File pipelineFile = getFileFromResources("gate/ling-pipe-pipeline-reduced.gapp");
+        File pipelineFile = ResourseFilesUtil.getFileFromResources("gate/ling-pipe-pipeline-reduced.gapp");
         corpusController =
                 (CorpusController) PersistenceManager.loadObjectFromFile(pipelineFile);
     }
@@ -129,36 +128,5 @@ public class LocationsPipeline {
         long endOffset = annotation.getEndNode().getOffset();
         return landmarkDocument.getContent().
                 getContent(startOffset, endOffset).toString();
-    }
-
-    private static File getFileFromResources(String filepath) {
-        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        URL pipelineResource = classloader.getResource(filepath);
-        File pipelineFile = null;
-        try {
-            pipelineFile = new File(pipelineResource.toURI());
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-
-        return pipelineFile;
-    }
-
-    @PostConstruct
-    private void init() throws IOException {
-        File uniqueLandmarksFile = getFileFromResources("duplication/merged-duplication-approaches");
-        List<MergedLandmark> uniqueLandmarks;
-
-        if (uniqueLandmarksFile == null) {
-            uniqueLandmarks = locationService.getUniqueLandmarksByLocation(dbPediaService.getUniqueLandmarks());
-        } else {
-            TypeReference<List<MergedLandmark>> typeRef
-                    = new TypeReference<List<MergedLandmark>>() {};
-            uniqueLandmarks = new ObjectMapper().readValue(uniqueLandmarksFile, typeRef);
-        }
-
-        landmarks = uniqueLandmarks.stream()
-                .map(mergedLandmark -> mergedLandmark.toLandmark())
-                .collect(Collectors.toList());
     }
 }
