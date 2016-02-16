@@ -12,6 +12,7 @@ import sightfinder.service.DBPediaService;
 import sightfinder.service.IRService;
 import sightfinder.service.LandmarkService;
 import sightfinder.service.LocationService;
+import sightfinder.service.UniqueLandmarkService;
 
 /**
  * Created by krasimira on 13.02.16.
@@ -22,10 +23,7 @@ import sightfinder.service.LocationService;
 public class UniqueLandmarksController {
 
     @Autowired
-    private LocationService locationService;
-
-    @Autowired
-    private DBPediaService dbPediaService;
+    private UniqueLandmarkService uniqueLandmarkService;
 
     @Autowired
 	private IRService informationRetrievalService;
@@ -45,6 +43,6 @@ public class UniqueLandmarksController {
 	
     @RequestMapping(value = "/landmarks")
     public List<MergedLandmark> getUniqueLandmarksOverall() {
-        return locationService.getUniqueLandmarksByLocation(dbPediaService.getUniqueLandmarks());
+        return uniqueLandmarkService.getUniqueLandmarksOverall();
     }
 }

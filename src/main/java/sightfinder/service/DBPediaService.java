@@ -30,6 +30,7 @@ import sightfinder.util.Constants;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import sightfinder.util.ResourseFilesUtil;
 
 /**
  * Created by krasimira on 04.02.16.
@@ -45,7 +46,7 @@ public class DBPediaService {
     public Map<Long, List<String>> getDBPediaResources() {
         Map<Long, List<String>> resourcesPerLandmark = new HashMap<>();
 
-        File dbPediaResourcesFile = getDBPediaResourcesFile();
+        File dbPediaResourcesFile = ResourseFilesUtil.getFileFromResources("dbpedia/dbpedia-resources");
 
         try {
             if (dbPediaResourcesFile == null) {
@@ -181,19 +182,6 @@ public class DBPediaService {
         }
 
         return dbpediaUrl;
-    }
-
-    private static File getDBPediaResourcesFile() {
-        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        URL resourseURL = classloader.getResource("dbpedia/dbpedia-resources");
-        File dbpediaResourcesFile = null;
-        try {
-            dbpediaResourcesFile = new File(resourseURL.toURI());
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-
-        return dbpediaResourcesFile;
     }
 
     @PostConstruct
