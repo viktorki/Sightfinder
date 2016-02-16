@@ -3,8 +3,6 @@ package sightfinder.service;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,12 +23,11 @@ import org.springframework.stereotype.Service;
 
 import sightfinder.model.Landmark;
 import sightfinder.model.MergedLandmark;
-import sightfinder.service.LandmarkService;
 import sightfinder.util.Constants;
+import sightfinder.util.ResourseFilesUtil;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import sightfinder.util.ResourseFilesUtil;
 
 /**
  * Created by krasimira on 04.02.16.

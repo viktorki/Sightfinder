@@ -1,19 +1,21 @@
 package sightfinder.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.scenario.effect.Merge;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import sightfinder.model.Landmark;
-import sightfinder.model.MergedLandmark;
-import sightfinder.util.ResourseFilesUtil;
-
-import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import sightfinder.model.Landmark;
+import sightfinder.model.MergedLandmark;
+import sightfinder.util.ResourseFilesUtil;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Created by krasimira on 16.02.16.
@@ -43,7 +45,7 @@ public class UniqueLandmarkService {
         File uniqueLandmarksFile = ResourseFilesUtil.getFileFromResources("calculated/merged-duplication-approaches");
 
         if (uniqueLandmarksFile == null) {
-            landmarks = getUniqueLandmarksOverall();
+            landmarks = locationService.getUniqueLandmarksByLocation();
         } else {
             TypeReference<List<MergedLandmark>> typeRef
                     = new TypeReference<List<MergedLandmark>>() {};
