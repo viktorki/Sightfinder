@@ -5,7 +5,7 @@ Options: control = appelt debug = true
 Rule: Distance  
 (  
  ({Token.string =~ "(\\d)+"}) : kilometers
- ({Token.string == "км"} | {Token.string == "м"})
+ ({Token.string == "км"})
  ({Token}) [0,3]
  ({Lookup.majorType == location}) : location    
 )  
@@ -20,7 +20,7 @@ Rule: Distance
 		String stringValue = gate.Utils.stringFor(doc, kilometersValue).replace(",", ".");
 		Double kilometesInDouble = Double.valueOf(stringValue);
 		
-		if (kilometesInDouble < 30) {
+		if (kilometesInDouble < 20) {
 			FeatureMap fm  = new SimpleFeatureMapImpl();
 	        fm.put("rule", "Closeness");
 	        String locationName = gate.Utils.stringFor(doc, location.iterator().next());
