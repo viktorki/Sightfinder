@@ -9,10 +9,15 @@ import java.util.Set;
 
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import sightfinder.model.Landmark;
-import sightfinder.model.LandmarkType;
 import sightfinder.service.DBPediaService;
 import sightfinder.service.FacebookService;
 import sightfinder.service.IRService;

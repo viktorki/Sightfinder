@@ -14,7 +14,9 @@ public class ResourseFilesUtil {
         URL pipelineResource = classloader.getResource(filepath);
         File pipelineFile = null;
         try {
-            pipelineFile = new File(pipelineResource.toURI());
+        	if (pipelineResource != null) {
+        		pipelineFile = new File(pipelineResource.toURI());
+        	}
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }

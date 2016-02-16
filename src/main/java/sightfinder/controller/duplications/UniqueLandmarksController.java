@@ -8,10 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import sightfinder.model.MergedLandmark;
-import sightfinder.service.DBPediaService;
 import sightfinder.service.IRService;
 import sightfinder.service.LandmarkService;
-import sightfinder.service.LocationService;
 import sightfinder.service.UniqueLandmarkService;
 
 /**
