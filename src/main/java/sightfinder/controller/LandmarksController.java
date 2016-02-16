@@ -1,19 +1,15 @@
 package sightfinder.controller;
 
+
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import java.util.Set;
 
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import sightfinder.model.Landmark;
 import sightfinder.model.LandmarkType;
@@ -47,13 +43,16 @@ public class LandmarksController {
 	LandmarkTypeService landmarkTypeService;
 
 	@RequestMapping(method = RequestMethod.GET)
-	public Iterable<Landmark> getAllLandmarks() {
-		return landmarkService.getLandmarks();
+	public Iterable<Landmark> getLandmarks(@RequestParam(required = false) Long typeId) {
+        if (typeId == null) {
+            return landmarkService.getLandmarks();
+        }
+        return landmarkService.getLandmarksWithType(landmarkTypeService.findLandmarkTypeById(typeId));
 	}
 
-	@RequestMapping(value = "/types", method = RequestMethod.GET)
-	public Iterable<LandmarkType> getAllLandmarkTypes() {
-		return landmarkTypeService.getLandmarkTypes();
+	@RequestMapping(method = RequestMethod.POST)
+	public Iterable<Landmark> saveAllLandmarks(@RequestBody List<Landmark> landmarks) {
+		return landmarkService.saveLandmarks(landmarks);
 	}
 
 	@RequestMapping(value = "/working-time", method = RequestMethod.POST)
@@ -90,28 +89,22 @@ public class LandmarksController {
 		return updatedLanmarks;
 	}
 
-	@RequestMapping(value = "/tf-idf", method = RequestMethod.GET)
-	public Double tfidf(@RequestParam String term, @RequestParam Long documentID) {
-		Iterable<Landmark> landmarks = landmarkService.getLandmarks();
-		List<Landmark> landmarksArray = StreamSupport.stream(landmarks.spliterator(), false).collect(
-				Collectors.toList());
-		Map<Long, String> descriptions = landmarksArray.stream().collect(
-				Collectors.toMap(landmark -> (Long) landmark.getId(), landmark -> landmark.getDescription()));
-		return informationRetrievalService.createTFIDF(descriptions, term, documentID);
-	}
-
-	@RequestMapping(value = "/term-frequencies", method = RequestMethod.GET)
-	public Map<String, Map<Long, Integer>> tf() {
-		Iterable<Landmark> landmarks = landmarkService.getLandmarks();
-		List<Landmark> landmarksArray = StreamSupport.stream(landmarks.spliterator(), false).collect(
-				Collectors.toList());
-		Map<Long, String> descriptions = landmarksArray.stream().collect(
-				Collectors.toMap(landmark -> (Long) landmark.getId(), landmark -> landmark.getDescription()));
-		return informationRetrievalService.termFrequencies(descriptions);
-	}
-
 	@RequestMapping("/near/{latitude}/{longitude}/")
 	public List<Landmark> findNearestLandmarks(@PathVariable Double latitude, @PathVariable Double longitude) {
 		return landmarkService.findNearestLandmarks(latitude, longitude, Constants.MAX_DISTANCE);
+	}
+	
+	@RequestMapping("/summary")
+	public String summarize(@RequestParam ArrayList<Long> documentIDs) {
+		Set<String> descriptions = new HashSet<String>();
+		for (Long documentID: documentIDs) {
+			descriptions.add(landmarkService.findLandmarkById(documentID).getDescription());
+		}
+		try {
+			return informationRetrievalService.summarize(descriptions);
+		} catch (Exception e) { 
+			e.printStackTrace();
+			return "";
+		}
 	}
 }

@@ -6,13 +6,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import sightfinder.model.Landmark;
 import sightfinder.model.MergedLandmark;
 import sightfinder.util.Constants;
+
+import com.google.common.collect.Lists;
 
 @Service
 public class LocationService {

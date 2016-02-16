@@ -3,7 +3,6 @@ package sightfinder.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import sightfinder.dao.LandmarkTypeDAO;
 import sightfinder.model.LandmarkType;
 
@@ -36,5 +35,13 @@ public class LandmarkTypeService {
 
     private LandmarkType findByName(String name) {
     	return landmarkTypeDAO.findByName(name);
+    }
+
+    public LandmarkType findLandmarkTypeById(Long id) {
+        return landmarkTypeDAO.findOne(id);
+    }
+
+    public void deleteType(Long typeId) {
+        landmarkTypeDAO.delete(typeId);
     }
 }
