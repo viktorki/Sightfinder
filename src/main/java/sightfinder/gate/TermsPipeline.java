@@ -81,6 +81,7 @@ public class TermsPipeline {
     }
 
     private Corpus getDocumentsCorpus() throws GateException {
+    	indexToDocumentID.clear();
         Corpus corpus = Factory.newCorpus("Document corpus");
         for (Entry<Long, String> entry : documentsByID.entrySet()) {
             Document landmarkDocument = Factory.newDocument(entry.getValue());

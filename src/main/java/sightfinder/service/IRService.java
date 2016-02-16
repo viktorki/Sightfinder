@@ -25,7 +25,7 @@ public class IRService {
 	
 //	public static Integer MAX_CLUSTER_SIZE = 10;
 	
-	public static int MAX_SUMMARY_SENTENCES_COUNT = 10;
+	public static int MAX_SUMMARY_SENTENCES_COUNT = 5;
 	
 	private TermsPipeline termsPipeline = new TermsPipeline();
 	private SplitToSentencePipeline splitToSentencePipeline = new SplitToSentencePipeline();
@@ -79,7 +79,7 @@ public class IRService {
 	}
 
 	private String repair(String document) {
-		return document.replaceAll("(Св.) |(св.) |с. |гр. ", "$1").replaceAll("(г.) ([A-Z])", "$1 $2");
+		return document.replaceAll("(Св\\.) |(св\\.) |с\\. |гр\\. |р\\. ", "$1").replaceAll("(г.) ([A-Z])", "$1 $2");
 	}
 
 	private void calculateScore(List<Sentence> sentences,
