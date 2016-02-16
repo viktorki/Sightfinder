@@ -42,12 +42,18 @@ public class LandmarksController {
 	@Autowired
 	LandmarkTypeService landmarkTypeService;
 
+	@CrossOrigin
 	@RequestMapping(method = RequestMethod.GET)
 	public Iterable<Landmark> getLandmarks(@RequestParam(required = false) Long typeId) {
         if (typeId == null) {
             return landmarkService.getLandmarks();
         }
         return landmarkService.getLandmarksWithType(landmarkTypeService.findLandmarkTypeById(typeId));
+	}
+
+	@RequestMapping(value = "/{id:.*}", method = RequestMethod.GET)
+	public Landmark getLandmark(@PathVariable Long id) {
+		return landmarkService.findLandmarkById(id);
 	}
 
 	@RequestMapping(method = RequestMethod.POST)

@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by krasimira on 13.02.16.
@@ -138,7 +139,6 @@ public class MergedLandmark {
         mergedLandmark.getNames().add(regularLandmark.getName());
         mergedLandmark.getSources().add(regularLandmark.getSource());
 
-
         if (regularLandmark.getLandmarkType() != null)
             mergedLandmark.getLandmarkTypes().add(regularLandmark.getLandmarkType());
 
@@ -185,14 +185,19 @@ public class MergedLandmark {
         landmark.setId(ids.iterator().next());
         if (landmarkTypes.size() > 0)
             landmark.setLandmarkType(landmarkTypes.iterator().next());
-        landmark.setDescription(Joiner.on(". ").join(descriptions));
-        landmark.setName(names.iterator().next());
+        List<String> meaningfulDescriptions = descriptions.stream().
+                filter(d -> d != null && !d.isEmpty()).
+                collect(Collectors.toList());
 
+        landmark.setDescription(Joiner.on(". ").join(meaningfulDescriptions));
+        landmark.setName(names.iterator().next());
         landmark.setLatitude(latitude);
         landmark.setLongitude(longitude);
         landmark.setWorkingTimeFrom(workingTimeFrom);
         landmark.setWorkingTimeTo(workingTimeTo);
         landmark.setTicketPrice(ticketPrice);
+        landmark.setTicketPrice(ticketPrice);
+        landmark.setPopularity(ids.size());
 
         return landmark;
     }

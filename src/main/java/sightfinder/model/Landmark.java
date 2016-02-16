@@ -65,6 +65,8 @@ public class Landmark implements Serializable {
 	@Transient
 	private Double distance;
 
+	private int popularity;
+
 	public Long getId() {
 		return id;
 	}
@@ -151,6 +153,14 @@ public class Landmark implements Serializable {
 
 	public void setDistance(Double distance) {
 		this.distance = distance;
+	}
+
+	public void setPopularity(int popularity) {
+		this.popularity = popularity;
+	}
+
+	public int getPopularity() {
+		return this.popularity;
 	}
 
 	public static Comparator<Landmark> LandmarkDistanceComparator = new Comparator<Landmark>() {
