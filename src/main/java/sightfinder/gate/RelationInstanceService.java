@@ -15,13 +15,17 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import sightfinder.model.Landmark;
+import sightfinder.model.Relation;
 import sightfinder.service.LandmarkService;
+import sightfinder.service.RelationService;
 
 import com.google.common.collect.Lists;
 
@@ -32,10 +36,23 @@ public class RelationInstanceService {
 
 	private static final String LOOKUP_ANNOTATION = "Lookup";
 
+	private static final String MAJOR_TYPE_FEATURE = "majorType";
+
+	private static final String RELATION_MAJOR_TYPE = "relation";
+
+	private static final String LOCATION_MAJOR_TYPE = "location";
+
+	private static final String DIMENSION_MAJOR_TYPE = "dimension";
+
+	private static final String UNIT_MAJOR_TYPE = "unit";
+
 	private CorpusController corpusController;
 
 	@Autowired
 	private LandmarkService landmarkService;
+
+	@Autowired
+	private RelationService relationService;
 
 	private List<Landmark> landmarks;
 
@@ -72,45 +89,115 @@ public class RelationInstanceService {
 		return pipeline;
 	}
 
-	public List<Annotation> makeRelations() throws GateException, IOException {
+	public List<Relation> makeRelations() throws GateException, IOException {
+		List<Relation> relationList = new ArrayList<Relation>();
 		landmarks = Lists.newArrayList(landmarkService.getLandmarks());
 
 		Corpus annotatedCorpus = getAnnotatedCorpus();
 
 		for (int i = 0; i < annotatedCorpus.size(); i++) {
 			Document document = annotatedCorpus.get(i);
+			Landmark landmark = landmarks.get(i);
 			AnnotationSet annotationSet = document.getAnnotations();
 
 			for (Annotation sentenceAnnotation : annotationSet) {
 				if (sentenceAnnotation.getType().equals(SENTENCE_ANNOTATION)) {
+					int annotationSetSize = annotationSet.size();
 					Long sentenceStartOffset = sentenceAnnotation.getStartNode().getOffset();
 					Long sentenceEndOffset = sentenceAnnotation.getEndNode().getOffset();
 
-					// System.out.print(document.getContent().getContent(sentenceStartOffset,
-					// sentenceEndOffset) + " -> ");
+					for (int j = 0; j < annotationSetSize; j++) {
+						Annotation lookupAnnotation = annotationSet.get(j);
 
-					for (Annotation lookupAnnotation : annotationSet) {
 						Long lookupAnnotationStartOffset = lookupAnnotation.getStartNode().getOffset();
 						Long lookupAnnotationEndOffset = lookupAnnotation.getEndNode().getOffset();
+						String lookupAnnotationType = lookupAnnotation.getType();
 
-						System.out.println(lookupAnnotation.getFeatures());
+						if (lookupAnnotationStartOffset >= sentenceStartOffset
+								&& lookupAnnotationEndOffset <= sentenceEndOffset
+								&& lookupAnnotationType.equals(LOOKUP_ANNOTATION)) {
+							if (RELATION_MAJOR_TYPE.equals(lookupAnnotation.getFeatures().get(MAJOR_TYPE_FEATURE))) {
+								Relation relation = new Relation();
+								relation.setLandmark(landmark);
 
-						if ((lookupAnnotation.getType().equals(LOOKUP_ANNOTATION))
-								&& lookupAnnotationStartOffset >= sentenceStartOffset
-								&& lookupAnnotationEndOffset <= sentenceEndOffset) {
-							// System.out.print(" "
-							// +
-							// document.getContent().getContent(lookupAnnotationStartOffset,
-							// lookupAnnotationEndOffset));
+								relation.setType(document.getContent()
+										.getContent(lookupAnnotationStartOffset, lookupAnnotationEndOffset).toString());
+
+								for (int k = j + 1; k < annotationSetSize; k++) {
+									Annotation nextAnnotation = annotationSet.get(k);
+									Long nextAnnotationStartOffset = nextAnnotation.getStartNode().getOffset();
+									Long nextAnnotationEndOffset = nextAnnotation.getEndNode().getOffset();
+
+									if (nextAnnotationStartOffset >= lookupAnnotationEndOffset
+											&& nextAnnotationEndOffset <= sentenceEndOffset
+											&& nextAnnotation.getType().equals(LOOKUP_ANNOTATION)
+											&& nextAnnotation.getFeatures().get(MAJOR_TYPE_FEATURE)
+													.equals(LOCATION_MAJOR_TYPE)) {
+										relation.setProperties(document.getContent()
+												.getContent(nextAnnotationStartOffset, nextAnnotationEndOffset)
+												.toString());
+										relationList.add(relation);
+										relationService.save(relation);
+
+										break;
+									}
+								}
+							} else if (DIMENSION_MAJOR_TYPE.equals(lookupAnnotation.getFeatures().get(
+									MAJOR_TYPE_FEATURE))) {
+								Relation relation = new Relation();
+								relation.setLandmark(landmark);
+
+								relation.setType(document.getContent()
+										.getContent(lookupAnnotationStartOffset, lookupAnnotationEndOffset).toString());
+
+								int k;
+
+								for (k = 0; k < annotationSetSize; k++) {
+									Annotation nextAnnotation = annotationSet.get(k);
+									Long nextAnnotationStartOffset = nextAnnotation.getStartNode().getOffset();
+									Long nextAnnotationEndOffset = nextAnnotation.getEndNode().getOffset();
+
+									if (nextAnnotationStartOffset >= sentenceStartOffset
+											&& nextAnnotationEndOffset <= sentenceEndOffset
+											&& NumberUtils.isNumber(document.getContent()
+													.getContent(nextAnnotationStartOffset, nextAnnotationEndOffset)
+													.toString())) {
+										relation.setProperties(document.getContent()
+												.getContent(nextAnnotationStartOffset, nextAnnotationEndOffset)
+												.toString());
+										relationList.add(relation);
+										relationService.save(relation);
+
+										break;
+									}
+								}
+
+								for (; k < annotationSetSize; k++) {
+									Annotation nextAnnotation = annotationSet.get(k);
+									Long nextAnnotationStartOffset = nextAnnotation.getStartNode().getOffset();
+									Long nextAnnotationEndOffset = nextAnnotation.getEndNode().getOffset();
+
+									if (nextAnnotationStartOffset >= lookupAnnotationEndOffset
+											&& nextAnnotationEndOffset <= sentenceEndOffset
+											&& UNIT_MAJOR_TYPE.equals(nextAnnotation.getFeatures().get(
+													MAJOR_TYPE_FEATURE))) {
+										relation.setProperties(relation.getProperties()
+												+ " "
+												+ document.getContent()
+														.getContent(nextAnnotationStartOffset, nextAnnotationEndOffset)
+														.toString());
+
+										break;
+									}
+								}
+							}
 						}
 					}
-
-					// System.out.println();
 				}
 			}
 		}
 
-		return null;
+		return relationList;
 	}
 
 	private Corpus getAnnotatedCorpus() throws GateException, IOException {

@@ -1,6 +1,5 @@
 package sightfinder.controller;
 
-import gate.Annotation;
 import gate.util.GateException;
 
 import java.io.IOException;
@@ -16,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import sightfinder.gate.LocationsPipeline;
 import sightfinder.gate.RelationInstanceService;
 import sightfinder.model.Landmark;
+import sightfinder.model.Relation;
 
 /**
  * Created by krasimira on 11.02.16.
@@ -36,7 +36,7 @@ public class AnnotationsController {
 	}
 
 	@RequestMapping("/relations")
-	public List<Annotation> getRelationAnnotations() throws GateException, IOException {
+	public List<Relation> getRelationAnnotations() throws GateException, IOException {
 		return relationInstanceService.makeRelations();
 	}
 }

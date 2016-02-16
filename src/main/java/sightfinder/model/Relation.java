@@ -6,6 +6,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -22,11 +24,12 @@ public class Relation implements Serializable {
 	@Column(name = "type")
 	private String type;
 
-	@Column(name = "from_landmark_id")
-	private Landmark fromLandmark;
+	@ManyToOne
+	@JoinColumn(name = "landmark_id")
+	private Landmark landmark;
 
-	@Column(name = "to_landmark_id")
-	private Landmark toLandmark;
+	@Column(name = "properties")
+	private String properties;
 
 	public Long getId() {
 		return id;
@@ -44,19 +47,19 @@ public class Relation implements Serializable {
 		this.type = type;
 	}
 
-	public Landmark getFromLandmark() {
-		return fromLandmark;
+	public Landmark getLandmark() {
+		return landmark;
 	}
 
-	public void setFromLandmark(Landmark fromLandmark) {
-		this.fromLandmark = fromLandmark;
+	public void setLandmark(Landmark landmark) {
+		this.landmark = landmark;
 	}
 
-	public Landmark getToLandmark() {
-		return toLandmark;
+	public String getProperties() {
+		return properties;
 	}
 
-	public void setToLandmark(Landmark toLandmark) {
-		this.toLandmark = toLandmark;
+	public void setProperties(String properties) {
+		this.properties = properties;
 	}
 }

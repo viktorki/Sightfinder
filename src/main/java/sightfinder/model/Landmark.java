@@ -64,7 +64,7 @@ public class Landmark implements Serializable {
 	@Column(name = "source")
 	private Source source;
 
-	@OneToMany(mappedBy = "fromLandmark")
+	@OneToMany(mappedBy = "landmark")
 	private List<Relation> relations;
 
 	@Transient
