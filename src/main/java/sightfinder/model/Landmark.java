@@ -153,8 +153,6 @@ public class Landmark implements Serializable {
 		this.distance = distance;
 	}
 
-
-
 	public static Comparator<Landmark> LandmarkDistanceComparator = new Comparator<Landmark>() {
 		public int compare(Landmark landmark1, Landmark landmark2) {
 			return landmark1.getDistance().compareTo(landmark2.getDistance());

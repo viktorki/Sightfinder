@@ -7,6 +7,7 @@ import sightfinder.model.Landmark;
 import sightfinder.model.MergedLandmark;
 import sightfinder.service.DBPediaService;
 import sightfinder.service.LocationService;
+import sightfinder.service.UniqueLandmarkService;
 
 import java.util.List;
 
@@ -19,13 +20,10 @@ import java.util.List;
 public class UniqueLandmarksController {
 
     @Autowired
-    private LocationService locationService;
-
-    @Autowired
-    private DBPediaService dbPediaService;
+    private UniqueLandmarkService uniqueLandmarkService;
 
     @RequestMapping(value = "/landmarks")
     public List<MergedLandmark> getUniqueLandmarksOverall() {
-        return locationService.getUniqueLandmarksByLocation(dbPediaService.getUniqueLandmarks());
+        return uniqueLandmarkService.getUniqueLandmarksOverall();
     }
 }
