@@ -16,8 +16,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -27,7 +25,11 @@ import org.springframework.stereotype.Service;
 
 import sightfinder.model.Landmark;
 import sightfinder.model.MergedLandmark;
+import sightfinder.service.LandmarkService;
 import sightfinder.util.Constants;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Created by krasimira on 04.02.16.
