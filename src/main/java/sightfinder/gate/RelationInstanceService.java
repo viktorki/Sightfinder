@@ -17,6 +17,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,7 +90,7 @@ public class RelationInstanceService {
 		return pipeline;
 	}
 
-	public List<Relation> makeRelations() throws GateException, IOException {
+	public List<Relation> getRelations() throws GateException, IOException {
 		List<Relation> relationList = new ArrayList<Relation>();
 		landmarks = Lists.newArrayList(landmarkService.getLandmarks());
 
@@ -157,11 +158,16 @@ public class RelationInstanceService {
 									Long nextAnnotationStartOffset = nextAnnotation.getStartNode().getOffset();
 									Long nextAnnotationEndOffset = nextAnnotation.getEndNode().getOffset();
 
+									Pattern p = Pattern.compile("(\\d+)(.*)");
+
 									if (nextAnnotationStartOffset >= sentenceStartOffset
 											&& nextAnnotationEndOffset <= sentenceEndOffset
-											&& NumberUtils.isNumber(document.getContent()
+											&& (NumberUtils.isNumber(document.getContent()
 													.getContent(nextAnnotationStartOffset, nextAnnotationEndOffset)
-													.toString())) {
+													.toString()) || p.matcher(
+													document.getContent()
+															.getContent(nextAnnotationStartOffset,
+																	nextAnnotationEndOffset).toString()).matches())) {
 										relation.setProperties(document.getContent()
 												.getContent(nextAnnotationStartOffset, nextAnnotationEndOffset)
 												.toString());
@@ -211,7 +217,7 @@ public class RelationInstanceService {
 
 	private static File getPipelineGappFile() {
 		ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-		URL pipelineResource = classloader.getResource("gate/make-relation-instances.xgapp");
+		URL pipelineResource = classloader.getResource("gate/split-to-sentence-pipeline.gapp");
 		File pipelineFile = null;
 		try {
 			pipelineFile = new File(pipelineResource.toURI());

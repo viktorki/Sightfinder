@@ -37,6 +37,6 @@ public class AnnotationsController {
 
 	@RequestMapping("/relations")
 	public List<Relation> getRelationAnnotations() throws GateException, IOException {
-		return relationInstanceService.makeRelations();
+		return relationInstanceService.getRelations();
 	}
 }
