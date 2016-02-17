@@ -118,4 +118,15 @@ public class LandmarksController {
 			return "";
 		}
 	}
+	
+	@RequestMapping(value = "/fix-descriptions")
+	public Iterable<Landmark> getLandmarksWithoutUselessDescription(@RequestParam ArrayList<Long> documentIDs) {
+		return landmarkService.removeUselessDescription(documentIDs);
+	}
+	
+	@RequestMapping(value = "/fix-descriptions", method = RequestMethod.POST)
+	public Iterable<Landmark> removeUselessDescription(@RequestParam ArrayList<Long> documentIDs) {
+		Iterable<Landmark> landmarks = landmarkService.removeUselessDescription(documentIDs);
+		return landmarkService.saveLandmarks(landmarks);
+	}
 }

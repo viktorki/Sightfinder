@@ -16,6 +16,12 @@ import sightfinder.util.Source;
 @Service
 @Transactional
 public class LandmarkService {
+	
+	public static String[] meaninglessDescriptions = {
+		"Описанието за този обект се подготвя и предстои да се публикува.",
+		" Още информация",
+		"Описанието за тази пещера предстои да бъде подготвено."
+	};
 
 	@Autowired
 	private LandmarkDAO landmarkDAO;
@@ -24,7 +30,9 @@ public class LandmarkService {
 		return landmarkDAO.save(landmark);
 	}
 
-	public Iterable<Landmark> saveLandmarks(List<Landmark> landmarks) { return landmarkDAO.save(landmarks); }
+	public Iterable<Landmark> saveLandmarks(Iterable<Landmark> landmarks) { 
+		return landmarkDAO.save(landmarks); 
+	}
 
 	public Iterable<Landmark> getLandmarks() {
 		return landmarkDAO.findAll();
@@ -58,6 +66,34 @@ public class LandmarkService {
 		nearestLandmarks.sort(Landmark.LandmarkDistanceComparator);
 
 		return nearestLandmarks;
+	}
+
+	public Iterable<Landmark> removeUselessDescription(ArrayList<Long> documentIDs) {
+		Iterable<Landmark> landmarks;
+		if (documentIDs == null || documentIDs.size() == 0) {
+			landmarks = landmarkDAO.findAll();
+		} else {
+			List<Landmark> landmarksList = new ArrayList<Landmark>();
+			for (Long documentID: documentIDs) {
+				Landmark landmark = landmarkDAO.findOne(documentID);
+				landmark.setDescription(fixDescription(landmark.getDescription()));
+				landmarksList.add(landmark);
+			}
+			landmarks = landmarksList;
+		}
+		
+		for (Landmark landmark: landmarks) {
+			landmark.setDescription(fixDescription(landmark.getDescription()));
+		}
+		return landmarks;
+	}
+
+	private String fixDescription(String description) {
+		for (String meaninglessDescription: meaninglessDescriptions) {
+			description = description.replaceAll(meaninglessDescription, "");
+		}
+		return description;
+			
 	}
 
 	private Double getDistance(Double latitude1, Double longitude1, Double latitude2, Double longitude2) {
