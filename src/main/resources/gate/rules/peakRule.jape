@@ -1,0 +1,15 @@
+Phase: Peak  
+Input: Lookup Token
+Options: control = appelt debug = true  
+ 
+Rule: Peak  
+(  
+ ({Token.string == "вр"}
+  {Token.string == "."} | 
+  {Token.string == "връх"}
+  )
+ {Lookup.majorType == location}    
+)  
+:location
+-->  
+ :location.Peak = {rule = "Peak"}

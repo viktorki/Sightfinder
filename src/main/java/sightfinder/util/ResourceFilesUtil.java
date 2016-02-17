@@ -7,20 +7,20 @@ import java.net.URL;
 /**
  * Created by krasimira on 16.02.16.
  */
-public class ResourseFilesUtil {
+public class ResourceFilesUtil {
 
     public static File getFileFromResources(String filepath) {
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        URL pipelineResource = classloader.getResource(filepath);
-        File pipelineFile = null;
+        URL resourceURL = classloader.getResource(filepath);
+        File resourceFile = null;
         try {
-        	if (pipelineResource != null) {
-        		pipelineFile = new File(pipelineResource.toURI());
+        	if (resourceURL != null) {
+        		resourceFile = new File(resourceURL.toURI());
         	}
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
 
-        return pipelineFile;
+        return resourceFile;
     }
 }

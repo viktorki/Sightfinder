@@ -6,6 +6,9 @@ import org.springframework.context.annotation.PropertySource;
 
 import javax.annotation.PostConstruct;
 
+/**
+ * Created by krasimira on 12.02.16.
+ */
 @Configuration
 @PropertySource("classpath:gate/gate.properties")
 public class GateConfiguration {

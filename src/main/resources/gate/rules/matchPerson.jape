@@ -1,0 +1,14 @@
+Phase: Person  
+Input: Lookup Token
+Options: control = appelt debug = true  
+ 
+Rule: Person  
+(  
+ (({Token.category == Npmsi} | {Token.category == Npfsi})
+ {Lookup.majorType == location}) |
+ ({Lookup.majorType == location}
+ ({Token.category == Npmsi} | {Token.category == Npfsi}))
+)  
+:person
+-->  
+ :person.Person = {rule = "Person"}
