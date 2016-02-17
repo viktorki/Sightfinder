@@ -109,6 +109,9 @@ public class RoutesService {
                             Double length = distanceInKilometers(landmark, visitedLandmark) +
                                     routesToLength.get(visitedLandmarks).getLength();
 
+                            System.out.println(String.format("distance between %s and %s is %s",
+                                    landmark.getName(), visitedLandmark.getName(), distanceInKilometers(landmark, visitedLandmark)));
+
                             if (length < minLength) {
                                 minLength = length;
                                 bestPrevious = visitedLandmark;
@@ -155,23 +158,24 @@ public class RoutesService {
 
     private List<Landmark> constructRoute(Landmark start, Landmark end, Set<Landmark> landmarks) {
         List<Landmark> reversedRoute = new ArrayList<>();
-        reversedRoute.add(start);
         reversedRoute.add(end);
 
         while (!landmarks.isEmpty()) {
             BestPosition bestPosition = routesToLength.get(new VisitedLandmarks(landmarks, end));
 
             Landmark previousLandmark = bestPosition.getComesFrom();
-            if (reversedRoute.get(0).equals(previousLandmark)) {
+            reversedRoute.add(previousLandmark);
+
+            if (start.equals(previousLandmark)) {
                 return reversedRoute;
             }
-
-            reversedRoute.add(previousLandmark);
             landmarks.remove(end);
             end = previousLandmark;
         }
 
-        return Lists.reverse(reversedRoute);
+        Collections.reverse(reversedRoute);
+
+        return reversedRoute;
     }
 
     /*
