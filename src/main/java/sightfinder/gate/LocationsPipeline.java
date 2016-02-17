@@ -8,7 +8,7 @@ import sightfinder.model.Landmark;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import sightfinder.service.UniqueLandmarkService;
-import sightfinder.util.ResourseFilesUtil;
+import sightfinder.util.ResourceFilesUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,7 +33,7 @@ public class LocationsPipeline {
     private List<Landmark> landmarks;
 
     public void initPipeline() throws GateException, IOException {
-        File pipelineFile = ResourseFilesUtil.getFileFromResources(CLOSENESS_PIPELINE);
+        File pipelineFile = ResourceFilesUtil.getFileFromResources(CLOSENESS_PIPELINE);
         corpusController =
                 (CorpusController) PersistenceManager.loadObjectFromFile(pipelineFile);
     }

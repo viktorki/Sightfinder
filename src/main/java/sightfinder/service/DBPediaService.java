@@ -12,8 +12,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -24,7 +22,7 @@ import org.springframework.stereotype.Service;
 import sightfinder.model.Landmark;
 import sightfinder.model.MergedLandmark;
 import sightfinder.util.Constants;
-import sightfinder.util.ResourseFilesUtil;
+import sightfinder.util.ResourceFilesUtil;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,7 +41,7 @@ public class DBPediaService {
     public Map<Long, List<String>> getDBPediaResources() {
         Map<Long, List<String>> resourcesPerLandmark = new HashMap<>();
 
-        File dbPediaResourcesFile = ResourseFilesUtil.getFileFromResources("calculated/dbpedia-resources");
+        File dbPediaResourcesFile = ResourceFilesUtil.getFileFromResources("calculated/dbpedia-resources");
 
         try {
             if (dbPediaResourcesFile == null) {

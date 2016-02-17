@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 import sightfinder.model.Landmark;
 import sightfinder.model.MergedLandmark;
-import sightfinder.util.ResourseFilesUtil;
+import sightfinder.util.ResourceFilesUtil;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,7 +42,7 @@ public class UniqueLandmarkService {
 
     @PostConstruct
     private void init() throws IOException {
-        File uniqueLandmarksFile = ResourseFilesUtil.getFileFromResources("calculated/merged-duplication-approaches");
+        File uniqueLandmarksFile = ResourceFilesUtil.getFileFromResources("calculated/merged-duplication-approaches");
 
         if (uniqueLandmarksFile == null) {
             landmarks = locationService.getUniqueLandmarksByLocation();

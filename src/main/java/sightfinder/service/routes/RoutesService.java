@@ -2,10 +2,7 @@ package sightfinder.service.routes;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.sun.org.apache.bcel.internal.generic.LAND;
 import gate.util.GateException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,12 +10,10 @@ import sightfinder.exception.LandmarkException;
 import sightfinder.gate.LocationsPipeline;
 import sightfinder.model.Landmark;
 import sightfinder.service.LandmarkService;
-import sightfinder.util.ResourseFilesUtil;
+import sightfinder.util.ResourceFilesUtil;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -262,7 +257,7 @@ public class RoutesService {
 
     private Map<String, Set<Landmark>> getLocationsToLandmarks() {
         Map<String, Set<Landmark>> locationsToLandmarks = new HashMap<>();
-        File groupByLocationResoursesFile = ResourseFilesUtil.getFileFromResources("calculated/group-by-location-new");
+        File groupByLocationResoursesFile = ResourceFilesUtil.getFileFromResources("calculated/group-by-location-new");
 
         try {
             if (groupByLocationResoursesFile == null) {
