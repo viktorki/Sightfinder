@@ -72,11 +72,9 @@ public class RoutesService {
     }
 
     private List<Landmark> getShortestRoute(Landmark start, Set<Landmark> landmarkGroup) {
-        System.out.println("Starting from:");
         System.out.println(start.getName());
 
         int landmarksCount = landmarkGroup.size();
-        System.out.println("Size is: " + landmarksCount);
         landmarkGroup.remove(start);
 
         Set<Set<Landmark>> landmarksPowerSet = powerSet(landmarkGroup);
@@ -97,7 +95,6 @@ public class RoutesService {
 
                 subset.stream().forEach(landmark -> {
                     if (!landmark.equals(start)) {
-                        System.out.println("For landmark: " + landmark.getName());
                         Set<Landmark> subsetWithoutLandmark = new HashSet<>(subset);
                         subsetWithoutLandmark.remove(landmark);
 
@@ -108,14 +105,9 @@ public class RoutesService {
 
                         while (setIterator.hasNext()) {
                             Landmark visitedLandmark = setIterator.next();
-                            System.out.println("Visited landmark: " + visitedLandmark.getName());
                             VisitedLandmarks visitedLandmarks = new VisitedLandmarks(subsetWithoutLandmark, visitedLandmark);
-
-                            System.out.println("Memorized length: " + routesToLength.get(visitedLandmarks).getLength());
-                            System.out.println("new Distance: " + distanceInKilometers(landmark, visitedLandmark));
                             Double length = distanceInKilometers(landmark, visitedLandmark) +
                                     routesToLength.get(visitedLandmarks).getLength();
-                            System.out.println("Distance form the beginning: " + length);
 
                             if (length < minLength) {
                                 minLength = length;
@@ -164,9 +156,7 @@ public class RoutesService {
     private List<Landmark> constructRoute(Landmark start, Landmark end, Set<Landmark> landmarks) {
         List<Landmark> reversedRoute = new ArrayList<>();
         reversedRoute.add(start);
-        System.out.println("Adding: " + start.getName());
         reversedRoute.add(end);
-        System.out.println("Adding: " + end.getName());
 
         while (!landmarks.isEmpty()) {
             BestPosition bestPosition = routesToLength.get(new VisitedLandmarks(landmarks, end));
@@ -177,8 +167,6 @@ public class RoutesService {
             }
 
             reversedRoute.add(previousLandmark);
-            System.out.println("Adding: " + previousLandmark.getName());
-
             landmarks.remove(end);
             end = previousLandmark;
         }
@@ -257,7 +245,7 @@ public class RoutesService {
 
     private Map<String, Set<Landmark>> getLocationsToLandmarks() {
         Map<String, Set<Landmark>> locationsToLandmarks = new HashMap<>();
-        File groupByLocationResoursesFile = ResourceFilesUtil.getFileFromResources("calculated/group-by-location-new");
+        File groupByLocationResoursesFile = ResourceFilesUtil.getFileFromResources("calculated/group-by-location");
 
         try {
             if (groupByLocationResoursesFile == null) {
