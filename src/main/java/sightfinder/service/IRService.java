@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import org.springframework.stereotype.Service;
 
@@ -23,17 +22,26 @@ import sightfinder.util.TermDocumentPair;
 @Service
 public class IRService {
 	
-//	public static Integer MAX_CLUSTER_SIZE = 10;
-	
+	private static final double SIMILARITY_THRESHOLD = 0.2;
+
 	public static int MAX_SUMMARY_SENTENCES_COUNT = 5;
 	
 	private TermsPipeline termsPipeline = new TermsPipeline();
 	private SplitToSentencePipeline splitToSentencePipeline = new SplitToSentencePipeline();
 	
+	public List<MergedLandmark> summarize(List<MergedLandmark> mergedList) throws Exception {
+		for (MergedLandmark mergedLandmark: mergedList) {
+			mergedLandmark.setDescription(summarize(mergedLandmark.getDescriptions()));
+		}
+        return mergedList;
+	}
+	
 	public String summarize(Set<String> documents) throws Exception {
 		ArrayList<String> documentsList = new ArrayList<String>();
 		for (String document: documents) {
-			documentsList.add(repair(document));
+			if (document != null) {
+				documentsList.add(repair(document));
+			}
 		}
 		List<String> originalSentences = splitToSentencePipeline.splitToSentences(documentsList);
 
@@ -56,23 +64,26 @@ public class IRService {
 				} else {
 					histogram.put(word, (long) 1);
 				}
+				
 			}
 			sentences.add(sentence);
 			wordsCount += entry.getValue().size();
-		}
+		}		
 		Map<String, Double> distribution = new HashMap<String, Double>();
 		for (Entry<String, Long> wordCount: histogram.entrySet()) {
 			distribution.put(wordCount.getKey(), wordCount.getValue() * 1.0 / wordsCount);
 		}
 		StringBuilder summary = new StringBuilder("");
 		for (int i = 0; i < MAX_SUMMARY_SENTENCES_COUNT; i++) {
+			if (sentences.isEmpty()) {
+				return summary.toString();
+			}
 			calculateScore(sentences, distribution);
 			String word = mostLikelyWord(distribution);
 			Sentence sentence = highestSentence(sentences, word);
 			summary.append(sentence.getOriginalText());
 			Double wordLikelyhood = distribution.get(word);
 			distribution.put(word, wordLikelyhood * wordLikelyhood);
-			sentences.remove(sentence);
 		}
 		
 		return summary.toString();
@@ -118,7 +129,15 @@ public class IRService {
 		return word;
 	}
 
-	public List<MergedLandmark> clusterDocuments(Iterable<Landmark> landmarks) throws Exception {
+	public List<MergedLandmark> clusterRawDocuments(Iterable<Landmark> landmarks) throws Exception {
+		List<MergedLandmark> mergedLandmarks = new ArrayList<MergedLandmark>();
+		for (Landmark landmark: landmarks) {
+			mergedLandmarks.add(MergedLandmark.convert(landmark));
+		}
+		return clusterDocuments(mergedLandmarks);
+	}
+	
+	public List<MergedLandmark> clusterDocuments(Iterable<MergedLandmark> landmarks) throws Exception {
 		List<Cluster> clusters = new ArrayList<Cluster>();
 		List<List<Double>> similaritiesMatrix = new ArrayList<List<Double>>();
 		fillClustersAndSimilarityMatrix(landmarks, clusters, similaritiesMatrix);
@@ -132,39 +151,37 @@ public class IRService {
 					double cosSimilarity = similaritiesMatrix.get(i).get(j);
 					if (cosSimilarity < minCosSimilarity) {
 						minCosSimilarity = cosSimilarity;
-						minI = j;
-						minJ = i;
+						minI = i;
+						minJ = j;
 					}
 				}
 			}
-//			if (clusters.get(minI).getDocumentids().size() + clusters.get(minJ).getDocumentids().size() >= MAX_CLUSTER_SIZE) {
-			if (minCosSimilarity > 0.2) {
+			if (minCosSimilarity > SIMILARITY_THRESHOLD) {
 				break;
 			}
 			// Merge cluster with index minI and cluster with minJ
-			System.out.printf("Merge %s with %s\n", clusters.get(minI).getDocumentids(), clusters.get(minJ).getDocumentids());
-			clusters.get(minI).mergeCluster(clusters.get(minJ));
-			clusters.remove(minJ);
-			similaritiesMatrix.remove(minJ);
-			for (int i = minJ; i < similaritiesMatrix.size(); i++) {
-				similaritiesMatrix.get(i).remove(minJ);
+			clusters.get(minJ).mergeCluster(clusters.get(minI));
+			clusters.remove(minI);
+			similaritiesMatrix.remove(minI);
+			for (int i = minI; i < similaritiesMatrix.size(); i++) {
+				similaritiesMatrix.get(i).remove(minI);
 			}
-			for (int i = 0; i < similaritiesMatrix.get(minI).size(); i++) {
-				similaritiesMatrix.get(minI).set(i, clusters.get(i).cosSimilarity(clusters.get(minI)));
+			for (int i = 0; i < similaritiesMatrix.get(minJ).size(); i++) {
+				similaritiesMatrix.get(minJ).set(i, clusters.get(i).cosSimilarity(clusters.get(minJ)));
 			}
-			for (int i = minI+1; i < similaritiesMatrix.size(); i++) {
-				similaritiesMatrix.get(i).set(minI, clusters.get(i).cosSimilarity(clusters.get(minI)));
+			for (int i = minJ+1; i < similaritiesMatrix.size(); i++) {
+				similaritiesMatrix.get(i).set(minJ, clusters.get(i).cosSimilarity(clusters.get(minJ)));
 			}
 		}
 
 		return mergeLandmarks(landmarks, clusters);
 	}
 
-	private List<MergedLandmark> mergeLandmarks(Iterable<Landmark> landmarks,
+	private List<MergedLandmark> mergeLandmarks(Iterable<MergedLandmark> landmarks,
 			List<Cluster> clusters) {
 		Map<Long, MergedLandmark> landmarksByID = new HashMap<Long, MergedLandmark>();
-		for (Landmark landmark: landmarks) {
-			landmarksByID.put(landmark.getId(), MergedLandmark.convert(landmark));
+		for (MergedLandmark landmark: landmarks) {
+			landmarksByID.put(landmark.getId(), landmark);
 		}
 		
 		List<MergedLandmark> uniqueLandmarks = new ArrayList<MergedLandmark>();
@@ -179,7 +196,7 @@ public class IRService {
 		return uniqueLandmarks;
 	}
 
-	private List<List<Double>> fillClustersAndSimilarityMatrix(Iterable<Landmark> landmarks, List<Cluster> clusters, List<List<Double>> similaritiesMatrix) throws Exception {
+	private List<List<Double>> fillClustersAndSimilarityMatrix(Iterable<MergedLandmark> landmarks, List<Cluster> clusters, List<List<Double>> similaritiesMatrix) throws Exception {
 		Map<Long, List<String>> termsByDocuments = getTermsByDocuments(landmarks);
 		Map<String, Map<Long, TermDocumentPair>> tfidf = calculateTFIDF(termsByDocuments);
 		for (Long documentID: termsByDocuments.keySet()) {
@@ -235,10 +252,11 @@ public class IRService {
 		return result;
 	}
 	
-	private Map<Long, List<String>> getTermsByDocuments(Iterable<Landmark> landmarks) throws Exception {
-		List<Landmark> landmarksArray = StreamSupport.stream(landmarks.spliterator(), false).collect(Collectors.toList());
-		Map<Long, String> descriptions = landmarksArray.stream().collect(
-				Collectors.toMap(landmark -> (Long) landmark.getId(), landmark -> landmark.getName()));
+	private Map<Long, List<String>> getTermsByDocuments(Iterable<MergedLandmark> landmarks) throws Exception {
+		Map<Long, String> descriptions = new HashMap<Long, String>();
+		for (MergedLandmark landmark: landmarks) {
+			descriptions.put(landmark.getId(), landmark.getDescription());
+		}
 		return termsPipeline.tokenizeAndStem(descriptions);
 	}
 	

@@ -32,9 +32,9 @@ public class UniqueLandmarksController {
     private LandmarkService landmarkService;
 	
 	@RequestMapping(value = "/tf-idf/landmarks")
-	public List<MergedLandmark> getUniqueLandmarksByTFIDF() {
+	public Iterable<MergedLandmark> getUniqueLandmarksByTFIDF() {
 		try {
-			return informationRetrievalService.clusterDocuments(landmarkService.getLandmarks());
+			return informationRetrievalService.clusterRawDocuments(landmarkService.getLandmarks());
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ArrayList<MergedLandmark>();
@@ -42,7 +42,12 @@ public class UniqueLandmarksController {
 	}
 	
     @RequestMapping(value = "/landmarks")
-    public List<Landmark> getUniqueLandmarksOverall() {
-        return uniqueLandmarkService.getUniqueLandmarksOverall().stream().map(l -> l.toLandmark()).collect(Collectors.toList());
+    public List<Landmark> getUniqueLandmarksMerged() {
+        return uniqueLandmarkService.getUniqueLandmarksMerged();
+    }
+    
+    @RequestMapping(value = "/landmarks/all")
+    public Iterable<MergedLandmark> getUniqueLandmarksOverall() {
+    	return uniqueLandmarkService.getUniqueLandmarksOverall();
     }
 }

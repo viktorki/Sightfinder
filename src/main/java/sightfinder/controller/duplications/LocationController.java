@@ -1,5 +1,6 @@
 package sightfinder.controller.duplications;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,11 @@ public class LocationController {
 
 	@RequestMapping(value = "/landmarks")
 	public List<MergedLandmark> getUniqueLandmarksByLocation() {
-		return locationService.getUniqueLandmarksByLocation();
+		try {
+			return locationService.getUniqueLandmarksByLocation();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ArrayList<MergedLandmark>();
+		}
 	}
 }

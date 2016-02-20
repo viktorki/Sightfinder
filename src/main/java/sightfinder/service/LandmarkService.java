@@ -68,9 +68,9 @@ public class LandmarkService {
 		return nearestLandmarks;
 	}
 
-	public Iterable<Landmark> removeUselessDescription(ArrayList<Long> documentIDs) {
+	public Iterable<Landmark> removeUselessDescription(Iterable<Long> documentIDs) {
 		Iterable<Landmark> landmarks;
-		if (documentIDs == null || documentIDs.size() == 0) {
+		if (documentIDs == null || !documentIDs.iterator().hasNext()) {
 			landmarks = landmarkDAO.findAll();
 		} else {
 			List<Landmark> landmarksList = new ArrayList<Landmark>();

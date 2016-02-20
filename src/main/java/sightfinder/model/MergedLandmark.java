@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
  * Created by krasimira on 13.02.16.
  */
 public class MergedLandmark {
+	
+	private Long id;
 
     private Set<Long> ids;
 
@@ -27,6 +29,8 @@ public class MergedLandmark {
     private Double latitude;
 
     private Double longitude;
+    
+    private String description;
 
     private Set<String> descriptions;
 
@@ -134,6 +138,7 @@ public class MergedLandmark {
     public static MergedLandmark convert(Landmark regularLandmark) {
         MergedLandmark mergedLandmark = new MergedLandmark();
 
+        mergedLandmark.setId(regularLandmark.getId());
         mergedLandmark.getIds().add(regularLandmark.getId());
         mergedLandmark.getDescriptions().add(regularLandmark.getDescription());
         mergedLandmark.getNames().add(regularLandmark.getName());
@@ -185,11 +190,8 @@ public class MergedLandmark {
         landmark.setId(ids.iterator().next());
         if (landmarkTypes.size() > 0)
             landmark.setLandmarkType(landmarkTypes.iterator().next());
-        List<String> meaningfulDescriptions = descriptions.stream().
-                filter(d -> d != null && !d.isEmpty()).
-                collect(Collectors.toList());
 
-        landmark.setDescription(Joiner.on(". ").join(meaningfulDescriptions));
+        landmark.setDescription(landmark.getDescription());
         landmark.setName(names.iterator().next());
         landmark.setLatitude(latitude);
         landmark.setLongitude(longitude);
@@ -201,4 +203,20 @@ public class MergedLandmark {
 
         return landmark;
     }
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
 }

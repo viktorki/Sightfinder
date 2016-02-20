@@ -1,18 +1,30 @@
 package sightfinder.gate;
 
-import gate.*;
+import gate.Annotation;
+import gate.Corpus;
+import gate.CorpusController;
+import gate.Document;
+import gate.Factory;
+import gate.Gate;
 import gate.util.GateException;
 import gate.util.Out;
 import gate.util.persistence.PersistenceManager;
-import sightfinder.model.Landmark;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import sightfinder.service.UniqueLandmarkService;
-import sightfinder.util.ResourceFilesUtil;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import sightfinder.model.Landmark;
+import sightfinder.service.UniqueLandmarkService;
+import sightfinder.util.ResourceFilesUtil;
 
 /**
  * Created by krasimira on 11.02.16.
@@ -20,7 +32,6 @@ import java.util.*;
 @Service
 public class LocationsPipeline {
 
-    private static final String LOOKUP_ANNOTATION = "Lookup";
     private static final String CLOSENESS_ANNOTATION = "Closeness";
     private static final String LOCATION_FEATURE = "location";
 
@@ -117,12 +128,5 @@ public class LocationsPipeline {
         }
 
         return locations;
-    }
-
-    private String extractTokenFromAnnotation(Document landmarkDocument, Annotation annotation) throws GateException {
-        long startOffset = annotation.getStartNode().getOffset();
-        long endOffset = annotation.getEndNode().getOffset();
-        return landmarkDocument.getContent().
-                getContent(startOffset, endOffset).toString();
     }
 }
