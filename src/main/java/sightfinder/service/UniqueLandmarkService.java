@@ -1,7 +1,6 @@
 package sightfinder.service;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,6 +27,9 @@ public class UniqueLandmarkService {
 
     @Autowired
     private DBPediaService dbPediaService;
+    
+    @Autowired
+	private IRService informationRetrievalService;
 
     private List<Landmark> mergedLandmarks;
     private List<MergedLandmark> landmarks;
@@ -41,11 +43,13 @@ public class UniqueLandmarkService {
     }
 
     @PostConstruct
-    private void init() throws IOException {
+    private void init() throws Exception {
         File uniqueLandmarksFile = ResourceFilesUtil.getFileFromResources("calculated/merged-duplication-approaches");
 
         if (uniqueLandmarksFile == null) {
             landmarks = locationService.getUniqueLandmarksByLocation();
+            landmarks = informationRetrievalService.clusterDocuments(landmarks);
+            landmarks = informationRetrievalService.summarize(landmarks);
         } else {
             TypeReference<List<MergedLandmark>> typeRef
                     = new TypeReference<List<MergedLandmark>>() {};

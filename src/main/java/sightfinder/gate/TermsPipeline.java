@@ -41,7 +41,7 @@ public class TermsPipeline {
 	private Set<String> stopWords;
 	private Map<Integer, Long> indexToDocumentID = new HashMap<Integer, Long>();
 
-    private static File getPipelineGappFile() {
+	private static File getPipelineGappFile() {
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
         URL pipelineResource = classloader.getResource("gate/extract-tokens-pipeline.gapp");
         File pipelineFile = null;
@@ -122,7 +122,7 @@ public class TermsPipeline {
                     long startOffset = annotation.getStartNode().getOffset();
                     long endOffset = annotation.getEndNode().getOffset();
                     String token = landmarkDocument.getContent().getContent(startOffset, endOffset).toString();
-                    if (!stopWords.contains(token)) {
+                    if (!stopWords.contains(token) && token.length() > 2) {
                     	Long documentID = indexToDocumentID.get(i);
                     	termsByDocument.get(documentID).add(stemmer.stem(token));
                     }

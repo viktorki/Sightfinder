@@ -20,15 +20,15 @@ public class LocationService {
 
 	@Autowired
 	private LandmarkService landmarkService;
-
-	public List<MergedLandmark> getUniqueLandmarksByLocation() {
-		Iterable<Landmark> landmarkList = landmarkService.getLandmarks();
+	
+	public List<MergedLandmark> getUniqueLandmarksByLocation() throws Exception {
+		Iterable<Landmark> landmarkList = landmarkService.removeUselessDescription(null);
 
 		List<MergedLandmark> mergedList = Lists.newArrayList(landmarkList).stream().map(landmark -> MergedLandmark.convert(landmark)).collect(Collectors.toList());
 		return getUniqueLandmarksByLocation(mergedList);
 	}
 
-	public List<MergedLandmark> getUniqueLandmarksByLocation(List<MergedLandmark> landmarkList) {
+	public List<MergedLandmark> getUniqueLandmarksByLocation(List<MergedLandmark> landmarkList) throws Exception {
 		Set<Long> mergedLandmarkIds = new HashSet<>();
 		List<MergedLandmark> uniqueLandmarkList = new ArrayList<>();
 
@@ -50,7 +50,6 @@ public class LocationService {
 				uniqueLandmarkList.add(landmark);
 			}
 		}
-
 		return uniqueLandmarkList;
 	}
 }
