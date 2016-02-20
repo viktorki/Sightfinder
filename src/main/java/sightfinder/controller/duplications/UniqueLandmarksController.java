@@ -2,11 +2,13 @@ package sightfinder.controller.duplications;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import sightfinder.model.Landmark;
 import sightfinder.model.MergedLandmark;
 import sightfinder.service.IRService;
 import sightfinder.service.LandmarkService;
@@ -40,7 +42,7 @@ public class UniqueLandmarksController {
 	}
 	
     @RequestMapping(value = "/landmarks")
-    public List<MergedLandmark> getUniqueLandmarksOverall() {
-        return uniqueLandmarkService.getUniqueLandmarksOverall();
+    public List<Landmark> getUniqueLandmarksOverall() {
+        return uniqueLandmarkService.getUniqueLandmarksOverall().stream().map(l -> l.toLandmark()).collect(Collectors.toList());
     }
 }
