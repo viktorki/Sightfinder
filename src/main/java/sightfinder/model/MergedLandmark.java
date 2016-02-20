@@ -191,13 +191,12 @@ public class MergedLandmark {
         if (landmarkTypes.size() > 0)
             landmark.setLandmarkType(landmarkTypes.iterator().next());
 
-        landmark.setDescription(landmark.getDescription());
+        landmark.setDescription(description);
         landmark.setName(names.iterator().next());
         landmark.setLatitude(latitude);
         landmark.setLongitude(longitude);
         landmark.setWorkingTimeFrom(workingTimeFrom);
         landmark.setWorkingTimeTo(workingTimeTo);
-        landmark.setTicketPrice(ticketPrice);
         landmark.setTicketPrice(ticketPrice);
         landmark.setPopularity(ids.size());
 

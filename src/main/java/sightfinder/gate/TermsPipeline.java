@@ -121,7 +121,7 @@ public class TermsPipeline {
                 if (annotation.getType().equals(TOKEN_ANNOTATION)) {
                     long startOffset = annotation.getStartNode().getOffset();
                     long endOffset = annotation.getEndNode().getOffset();
-                    String token = landmarkDocument.getContent().getContent(startOffset, endOffset).toString();
+                    String token = landmarkDocument.getContent().getContent(startOffset, endOffset).toString().toLowerCase();
                     if (!stopWords.contains(token) && token.length() > 2) {
                     	Long documentID = indexToDocumentID.get(i);
                     	termsByDocument.get(documentID).add(stemmer.stem(token));

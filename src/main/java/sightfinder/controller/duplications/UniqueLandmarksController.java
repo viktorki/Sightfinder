@@ -2,9 +2,9 @@ package sightfinder.controller.duplications;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,6 +32,7 @@ public class UniqueLandmarksController {
     private LandmarkService landmarkService;
 	
 	@RequestMapping(value = "/tf-idf/landmarks")
+	@CrossOrigin
 	public Iterable<MergedLandmark> getUniqueLandmarksByTFIDF() {
 		try {
 			return informationRetrievalService.clusterRawDocuments(landmarkService.getLandmarks());
@@ -42,11 +43,13 @@ public class UniqueLandmarksController {
 	}
 	
     @RequestMapping(value = "/landmarks")
+    @CrossOrigin
     public List<Landmark> getUniqueLandmarksMerged() {
         return uniqueLandmarkService.getUniqueLandmarksMerged();
     }
     
     @RequestMapping(value = "/landmarks/all")
+    @CrossOrigin
     public Iterable<MergedLandmark> getUniqueLandmarksOverall() {
     	return uniqueLandmarkService.getUniqueLandmarksOverall();
     }
